@@ -130,7 +130,7 @@ const KycForm = () => {
         });
 
         try {
-            const response = await axios.post('http://localhost:5001/users/kyc',
+            const response = await axios.post('http://localhost:5001/members/kyc',
                 formDataToSend,
                 {
                     headers: {

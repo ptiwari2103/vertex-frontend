@@ -9,8 +9,8 @@ const Register = () => {
         date_of_birth: "",
         gender: "",
         mobile_number: "",
-        state: "", 
-        district: "", 
+        state_id: "", 
+        district_id: "", 
         terms_accepted: false
     });
 
@@ -19,8 +19,8 @@ const Register = () => {
         guardian_name: "",
         mobile_number: "",
         password: "",
-        state: "",
-        district: ""
+        state_id: "",
+        district_id: ""
     });
 
     const [passwordStrength, setPasswordStrength] = useState({
@@ -40,21 +40,21 @@ const Register = () => {
 
     // Fetch states from master table (Mock API)
     useEffect(() => {
-        axios.get("http://localhost:5001/states")  // Adjust API URL
+        axios.get("http://localhost:5001/locations/states")  // Adjust API URL
             .then(response => setStates(response.data))
             .catch(error => console.error("Error fetching states", error));
     }, []);
 
     // Fetch districts when state changes
     useEffect(() => {
-        if (formData.state) {
-            axios.get(`http://localhost:5001/districts?stateId=${formData.state}`)  // Changed to use stateId
+        if (formData.state_id) {
+            axios.get(`http://localhost:5001/locations/districts?stateId=${formData.state_id}`)  // Changed to use stateId
                 .then(response => setDistricts(response.data))
                 .catch(error => console.error("Error fetching districts", error));
         } else {
             setDistricts([]);
         }
-    }, [formData.state]);
+    }, [formData.state_id]);
 
     // Validate name input
     const validateNameInput = (name, value) => {
@@ -161,7 +161,7 @@ const Register = () => {
         }
 
         // For state and district selection
-        if (name === "state" || name === "district") {
+        if (name === "state_id" || name === "district_id") {
             setErrors(prev => ({
                 ...prev,
                 [name]: ""
@@ -208,7 +208,7 @@ const Register = () => {
         }
 
         // Validate state and district selection
-        if (!formData.state) {
+        if (!formData.state_id) {
             setErrors(prev => ({
                 ...prev,
                 state: "Please select a state"
@@ -217,7 +217,7 @@ const Register = () => {
             return;
         }
 
-        if (!formData.district) {
+        if (!formData.district_id) {
             setErrors(prev => ({
                 ...prev,
                 district: "Please select a district"
@@ -246,7 +246,7 @@ const Register = () => {
             };
             console.log(dataToSubmit);
             
-            const response = await axios.post("http://localhost:5001/users/register", dataToSubmit);
+            const response = await axios.post("http://localhost:5001/members/register", dataToSubmit);
             console.log(response.data);
             setUserDetails(response.data);
             setShowPopup(true);
@@ -258,8 +258,8 @@ const Register = () => {
                 date_of_birth: "",
                 gender: "",
                 mobile_number: "",
-                state: "", 
-                district: "", 
+                state_id: "", 
+                district_id: "", 
                 terms_accepted: false
             });
         } catch (err) {
@@ -415,11 +415,11 @@ const Register = () => {
                     <div>
                         <label className="block text-gray-600 text-sm mb-1">State <span className="text-red-500">*</span></label>
                         <select 
-                            name="state" 
-                            value={formData.state} 
+                            name="state_id" 
+                            value={formData.state_id} 
                             onChange={handleChange} 
                             required 
-                            className={`w-full p-2 border rounded-lg ${errors.state ? 'border-red-500' : ''}`}
+                            className={`w-full p-2 border rounded-lg ${errors.state_id ? 'border-red-500' : ''}`}
                         >
                             <option value="">Select</option>
                             {states.map((state) => (
@@ -433,11 +433,11 @@ const Register = () => {
                     <div>
                         <label className="block text-gray-600 text-sm mb-1">District <span className="text-red-500">*</span></label>
                         <select 
-                            name="district" 
-                            value={formData.district} 
+                            name="district_id" 
+                            value={formData.district_id} 
                             onChange={handleChange} 
                             required 
-                            className={`w-full p-2 border rounded-lg ${errors.district ? 'border-red-500' : ''}`}
+                            className={`w-full p-2 border rounded-lg ${errors.district_id ? 'border-red-500' : ''}`}
                         >
                             <option value="">Select</option>
                             {districts.map((district) => (
