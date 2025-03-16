@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import PropTypes from 'prop-types';
+import { termsAndConditions } from '../data/termsAndConditions';
 
 const Register = () => {
     const [formData, setFormData] = useState({
@@ -11,7 +13,10 @@ const Register = () => {
         mobile_number: "",
         state_id: "", 
         district_id: "", 
-        terms_accepted: false
+        terms_accepted: false,
+        confirm_password: "",
+        email: "",
+        key: ""
     });
 
     const [errors, setErrors] = useState({
@@ -20,7 +25,12 @@ const Register = () => {
         mobile_number: "",
         password: "",
         state_id: "",
-        district_id: ""
+        district_id: "",
+        date_of_birth: "",
+        confirm_password: "",
+        email: "",
+        key: "",
+        terms_accepted: ""
     });
 
     const [passwordStrength, setPasswordStrength] = useState({
@@ -37,6 +47,9 @@ const Register = () => {
     const [districts, setDistricts] = useState([]);
     const [showPopup, setShowPopup] = useState(false);
     const [userDetails, setUserDetails] = useState(null);
+    const [age, setAge] = useState(null);
+    const [isUnderAge, setIsUnderAge] = useState(false);
+    const [showTermsModal, setShowTermsModal] = useState(false);
 
     // Fetch states from master table (Mock API)
     useEffect(() => {
@@ -56,6 +69,21 @@ const Register = () => {
         }
     }, [formData.state_id]);
 
+    // Calculate age from date of birth
+    const calculateAge = (birthDate) => {
+        const today = new Date();
+        const birth = new Date(birthDate);
+        let age = today.getFullYear() - birth.getFullYear();
+        const monthDiff = today.getMonth() - birth.getMonth();
+        
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+            age--;
+        }
+        
+        setIsUnderAge(age < 18);
+        return age;
+    };
+
     // Validate name input
     const validateNameInput = (name, value) => {
         if (value.length > 50) {
@@ -70,8 +98,8 @@ const Register = () => {
     // Validate mobile number
     const validateMobile = (value) => {
         if (!value) return "";
-        if (!/^[6-9]\d{9}$/.test(value)) {
-            return "Enter valid 10-digit mobile number starting with 6-9";
+        if (!/^[0-9]{10}$/.test(value)) {
+            return "Enter valid 10-digit mobile number";
         }
         return "";
     };
@@ -106,12 +134,76 @@ const Register = () => {
                 ...formData,
                 [name]: checked
             });
+            
+            // Clear terms and conditions error when checkbox is checked
+            if (name === "terms_accepted" && checked) {
+                setErrors(prev => ({
+                    ...prev,
+                    terms_accepted: ""
+                }));
+            }
             return;
+        }
+
+        // For date of birth field
+        if (name === "date_of_birth") {
+            const calculatedAge = calculateAge(value);
+            setAge(calculatedAge);
+            
+            if (calculatedAge < 18) {
+                setErrors(prev => ({
+                    ...prev,
+                    date_of_birth: "You must be at least 18 years old to register"
+                }));
+            } else {
+                setErrors(prev => ({
+                    ...prev,
+                    date_of_birth: ""
+                }));
+            }
+        }
+
+        // For confirm password validation
+        if (name === "confirm_password") {
+            if (value !== formData.password) {
+                setErrors(prev => ({
+                    ...prev,
+                    confirm_password: "Passwords do not match"
+                }));
+            } else {
+                setErrors(prev => ({
+                    ...prev,
+                    confirm_password: ""
+                }));
+            }
+        }
+
+        // For password field, also check confirm password
+        if (name === "password") {
+            const error = validatePassword(value);
+            setErrors(prev => ({
+                ...prev,
+                password: error
+            }));
+
+            // Check confirm password match if it's already entered
+            if (formData.confirm_password) {
+                if (value !== formData.confirm_password) {
+                    setErrors(prev => ({
+                        ...prev,
+                        confirm_password: "Passwords do not match"
+                    }));
+                } else {
+                    setErrors(prev => ({
+                        ...prev,
+                        confirm_password: ""
+                    }));
+                }
+            }
         }
 
         // For name and guardian_name fields
         if (name === "name" || name === "guardian_name") {
-            //alert(value);
             const error = validateNameInput(name, value);
             setErrors(prev => ({
                 ...prev,
@@ -125,20 +217,6 @@ const Register = () => {
                     [name]: value
                 });
             }
-            return;
-        }
-
-        // For password validation
-        if (name === "password") {
-            const error = validatePassword(value);
-            setErrors(prev => ({
-                ...prev,
-                password: error
-            }));
-            setFormData({
-                ...formData,
-                password: value
-            });
             return;
         }
 
@@ -180,8 +258,24 @@ const Register = () => {
         e.preventDefault();
 
         // Check for validation errors
-        if (errors.name || errors.guardian_name || errors.mobile_number || errors.password) {
+        if (errors.name || errors.guardian_name || errors.mobile_number || errors.password || 
+            errors.date_of_birth || errors.confirm_password || errors.key) {
             alert("Please fix the validation errors before submitting.");
+            return;
+        }
+
+        // Check terms acceptance
+        if (!formData.terms_accepted) {
+            setErrors(prev => ({
+                ...prev,
+                terms_accepted: "You must accept the terms and conditions to register"
+            }));
+            return;
+        }
+
+        // Check age requirement
+        if (age < 18) {
+            alert("You must be at least 18 years old to register.");
             return;
         }
 
@@ -228,17 +322,16 @@ const Register = () => {
 
         // Check if all fields are filled
         for (let key in formData) {
-            if (!formData[key]) {
+            if (!formData[key] && key !== 'email') {
                 alert("All fields are required!");
                 return;
             }
         }
 
-        if (!formData.terms_accepted) {
-            alert("You must agree to the terms and conditions.");
+        if(formData.password !== formData.confirm_password){
+            alert("Password and confirm password must be same");
             return;
         }
-
       
         try {
             const dataToSubmit = { ...formData,
@@ -260,7 +353,10 @@ const Register = () => {
                 mobile_number: "",
                 state_id: "", 
                 district_id: "", 
-                terms_accepted: false
+                terms_accepted: false,
+                confirm_password: "",
+                email: "",
+                key: ""
             });
         } catch (err) {
             if (err.response && err.response.data) {
@@ -276,197 +372,334 @@ const Register = () => {
         
     };
 
-    return (
-        <div className="flex justify-center items-center min-h-screen bg-gray-100 pt-8">
-            <div className="bg-white p-8 rounded-lg shadow-lg w-[800px] mb-8">
-                <h2 className="text-2xl font-bold text-center text-gray-700 mb-6">Register</h2>
-
-                <form onSubmit={handleSubmit} className="space-y-4 grid grid-cols-2 gap-6 mb-16" autoComplete="off">
-                    {/* Name */}
-                    <div>
-                        <label className="block text-gray-600 text-sm mb-1">Name <span className="text-red-500">*</span>
-                        <span className="text-xs text-green-500 mt-1"> (Your name should match the Aadhaar.)</span>
-                        </label>
-                        <input 
-                            type="text" 
-                            name="name" 
-                            value={formData.name} 
-                            onChange={handleChange} 
-                            required 
-                            className={`w-full p-2 border rounded-lg ${errors.name ? 'border-red-500' : ''}`}
-                            autoComplete="off"
-                            maxLength={50}
-                        />
-                        {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
-                        
+    const TermsModal = ({ isOpen, onClose }) => {
+        if (!isOpen) return null;
+    
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white p-6 rounded-lg max-w-4xl w-full max-h-[85vh] flex flex-col">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-2xl font-bold">Terms and Conditions</h2>
+                        <button 
+                            onClick={onClose}
+                            className="text-gray-500 hover:text-gray-700"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
                     </div>
+                    
+                    <div className="overflow-y-auto flex-grow pr-4">
+                        {termsAndConditions.map((section, index) => (
+                            <div key={index} className="mb-8">
+                                <h3 className="text-xl font-semibold mb-4">{section.title}</h3>
+                                <div className="whitespace-pre-line text-gray-700">
+                                    {section.content}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    
+                    <div className="mt-6 flex justify-end pt-4 border-t">
+                        <button 
+                            onClick={onClose}
+                            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
 
-                    {/* Password */}
-                    <div>
-                        <label className="block text-gray-600 text-sm mb-1">Password <span className="text-red-500">*</span></label>
-                        <div className="relative">
+    TermsModal.propTypes = {
+        isOpen: PropTypes.bool.isRequired,
+        onClose: PropTypes.func.isRequired
+    };
+
+    return (
+        <div className="flex justify-center items-center min-h-screen bg-gray-100 py-12">
+            <div className="bg-white p-10 rounded-xl shadow-lg w-[1400px] mb-8">
+                <h2 className="text-4xl font-bold mb-10 text-center text-gray-800">Registration Form</h2>
+                <form onSubmit={handleSubmit} className="space-y-8">
+                    <div className="grid grid-cols-2 gap-x-12 gap-y-8">
+                        {/* Name */}
+                        <div>
+                            <label className="block text-xl text-gray-700 mb-2">
+                                Name <span className="text-red-500">*</span>
+                                <span className="text-sm text-blue-600 ml-2">(Should match your Aadhaar card)</span>
+                            </label>
+                            <input
+                                type="text"
+                                name="name"
+                                value={formData.name}
+                                onChange={handleChange}
+                                required
+                                className={`w-full p-4 text-lg border rounded-lg ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
+                            />
+                            {errors.name && <p className="text-sm text-red-500 mt-2">{errors.name}</p>}
+                        </div>
+
+                        {/* Guardian Name */}
+                        <div>
+                            <label className="block text-xl text-gray-700 mb-2">Guardian Name <span className="text-red-500">*</span></label>
+                            <input
+                                type="text"
+                                name="guardian_name"
+                                value={formData.guardian_name}
+                                onChange={handleChange}
+                                required
+                                className={`w-full p-4 text-lg border rounded-lg ${errors.guardian_name ? 'border-red-500' : 'border-gray-300'}`}
+                            />
+                            {errors.guardian_name && <p className="text-sm text-red-500 mt-2">{errors.guardian_name}</p>}
+                        </div>
+
+                        {/* Date of Birth */}
+                        <div>
+                            <label className="block text-xl text-gray-700 mb-2">Date of Birth <span className="text-red-500">*</span></label>
                             <input 
-                                type={showPassword ? "text" : "password"}
-                                name="password" 
-                                value={formData.password} 
+                                type="date" 
+                                name="date_of_birth" 
+                                value={formData.date_of_birth} 
                                 onChange={handleChange} 
                                 required 
-                                className={`w-full p-2 border rounded-lg ${errors.password ? 'border-red-500' : ''}`}
-                                autoComplete="new-password"
-                                placeholder="Enter strong password"
+                                className={`w-full p-4 text-lg border rounded-lg ${errors.date_of_birth ? 'border-red-500' : 'border-gray-300'}`}
+                                max={new Date().toISOString().split('T')[0]}
                             />
-                            <button
-                                type="button"
-                                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                                onClick={() => setShowPassword(!showPassword)}
+                            {errors.date_of_birth && <p className="text-sm text-red-500 mt-2">{errors.date_of_birth}</p>}
+                            {age !== null && (
+                                <div className={`mt-2 text-lg font-semibold ${isUnderAge ? 'text-red-500' : 'text-green-600'}`}>
+                                    Age: {age} years old
+                                    {isUnderAge && <span className="block text-sm mt-1">Must be at least 18 years old to register</span>}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Gender */}
+                        <div>
+                            <label className="block text-xl text-gray-700 mb-2">Gender <span className="text-red-500">*</span></label>
+                            <select 
+                                name="gender" 
+                                value={formData.gender} 
+                                onChange={handleChange} 
+                                required 
+                                className="w-full p-4 text-lg border rounded-lg"
                             >
-                                {showPassword ? "Hide" : "Show"}
-                            </button>
+                                <option value="">Select</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Transgender">Transgender</option>
+                            </select>
                         </div>
-                        {/* Password strength indicators */}
-                        <div className="mt-2 space-y-1 text-sm">
-                            <div className={`flex items-center ${passwordStrength.length ? 'text-green-500' : 'text-gray-500'}`}>
-                                <span className="mr-1">✓</span>
-                                <span>At least 8 characters</span>
+
+                        {/* Mobile Number */}
+                        <div>
+                            <label className="block text-xl text-gray-700 mb-2">Mobile Number <span className="text-red-500">*</span></label>
+                            <input 
+                                type="tel" 
+                                name="mobile_number" 
+                                value={formData.mobile_number} 
+                                onChange={handleChange} 
+                                required 
+                                className={`w-full p-4 text-lg border rounded-lg ${errors.mobile_number ? 'border-red-500' : 'border-gray-300'}`}
+                                maxLength={10}
+                                placeholder="Enter 10-digit mobile number"
+                            />
+                            {errors.mobile_number && <p className="text-sm text-red-500 mt-2">{errors.mobile_number}</p>}
+                        </div>
+
+                        <div>
+                            <label className="block text-xl text-gray-700 mb-2">
+                                Email <span className="text-gray-400 text-base ml-2">(Optional)</span>
+                            </label>
+                            <input 
+                                type="email" 
+                                name="email" 
+                                value={formData.email} 
+                                onChange={handleChange} 
+                                className={`w-full p-4 text-lg border rounded-lg ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
+                                placeholder="Enter your email address"
+                            />
+                            {errors.email && <p className="text-sm text-red-500 mt-2">{errors.email}</p>}
+                        </div>
+
+                        {/* State */}
+                        <div>
+                            <label className="block text-xl text-gray-700 mb-2">State <span className="text-red-500">*</span></label>
+                            <select 
+                                name="state_id" 
+                                value={formData.state_id} 
+                                onChange={handleChange} 
+                                required 
+                                className={`w-full p-4 text-lg border rounded-lg ${errors.state_id ? 'border-red-500' : 'border-gray-300'}`}
+                            >
+                                <option value="">Select</option>
+                                {states.map((state) => (
+                                    <option key={state.id} value={state.id}>{state.name}</option>
+                                ))}
+                            </select>
+                            {errors.state && <p className="text-sm text-red-500 mt-2">{errors.state}</p>}
+                        </div>
+
+                        {/* District */}
+                        <div>
+                            <label className="block text-xl text-gray-700 mb-2">District <span className="text-red-500">*</span></label>
+                            <select 
+                                name="district_id" 
+                                value={formData.district_id} 
+                                onChange={handleChange} 
+                                required 
+                                className={`w-full p-4 text-lg border rounded-lg ${errors.district_id ? 'border-red-500' : 'border-gray-300'}`}
+                            >
+                                <option value="">Select</option>
+                                {districts.map((district) => (
+                                    <option key={district.id} value={district.id}>{district.name}</option>
+                                ))}
+                            </select>
+                            {errors.district && <p className="text-sm text-red-500 mt-2">{errors.district}</p>}
+                        </div>
+                        
+                        {/* Password */}
+                        <div>
+                            <label className="block text-xl text-gray-700 mb-2">Password <span className="text-red-500">*</span></label>
+                            <div className="relative">
+                                <input 
+                                    type={showPassword ? "text" : "password"}
+                                    name="password" 
+                                    value={formData.password} 
+                                    onChange={handleChange} 
+                                    required 
+                                    className={`w-full p-4 text-lg border rounded-lg ${errors.password ? 'border-red-500' : 'border-gray-300'}`}
+                                    autoComplete="new-password"
+                                    placeholder="Enter strong password"
+                                />
+                                <button
+                                    type="button"
+                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                >
+                                    {showPassword ? "Hide" : "Show"}
+                                </button>
                             </div>
-                            <div className={`flex items-center ${passwordStrength.uppercase ? 'text-green-500' : 'text-gray-500'}`}>
-                                <span className="mr-1">✓</span>
-                                <span>One uppercase letter</span>
+                            {/* Password strength indicators */}
+                            <div className="mt-2 space-y-1 text-sm">
+                                <div className={`flex items-center ${passwordStrength.length ? 'text-green-500' : 'text-gray-500'}`}>
+                                    <span className="mr-1">✓</span>
+                                    <span>At least 8 characters</span>
+                                </div>
+                                <div className={`flex items-center ${passwordStrength.uppercase ? 'text-green-500' : 'text-gray-500'}`}>
+                                    <span className="mr-1">✓</span>
+                                    <span>One uppercase letter</span>
+                                </div>
+                                <div className={`flex items-center ${passwordStrength.lowercase ? 'text-green-500' : 'text-gray-500'}`}>
+                                    <span className="mr-1">✓</span>
+                                    <span>One lowercase letter</span>
+                                </div>
+                                <div className={`flex items-center ${passwordStrength.number ? 'text-green-500' : 'text-gray-500'}`}>
+                                    <span className="mr-1">✓</span>
+                                    <span>One number</span>
+                                </div>
+                                <div className={`flex items-center ${passwordStrength.special ? 'text-green-500' : 'text-gray-500'}`}>
+                                    <span className="mr-1">✓</span>
+                                    <span>One special character (!@#$%^&*)</span>
+                                </div>
                             </div>
-                            <div className={`flex items-center ${passwordStrength.lowercase ? 'text-green-500' : 'text-gray-500'}`}>
-                                <span className="mr-1">✓</span>
-                                <span>One lowercase letter</span>
+                            {errors.password && <p className="text-sm text-red-500 mt-2">{errors.password}</p>}
+                        </div>
+                        
+                        <div>
+                            <label className="block text-xl text-gray-700 mb-2">
+                                Confirm Password <span className="text-red-500">*</span>
+                            </label>
+                            <div className="relative">
+                                <input 
+                                    type={showPassword ? "text" : "password"}
+                                    name="confirm_password" 
+                                    value={formData.confirm_password} 
+                                    onChange={handleChange} 
+                                    required 
+                                    className={`w-full p-4 text-lg border rounded-lg ${errors.confirm_password ? 'border-red-500' : 'border-gray-300'}`}
+                                    autoComplete="new-password"
+                                    placeholder="Confirm your password"
+                                />
                             </div>
-                            <div className={`flex items-center ${passwordStrength.number ? 'text-green-500' : 'text-gray-500'}`}>
-                                <span className="mr-1">✓</span>
-                                <span>One number</span>
+                            {errors.confirm_password && (
+                                <p className="text-sm text-red-500 mt-2">
+                                    {errors.confirm_password}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Terms & Conditions and Key side by side */}
+                        <div className="col-span-2 flex justify-between items-start space-x-8 mt-6 bg-gray-50 p-6 rounded-lg">
+                            {/* Terms & Conditions */}
+                            <div className="flex-1">
+                                <div className="flex items-center space-x-3">
+                                    <input 
+                                        type="checkbox" 
+                                        name="terms_accepted" 
+                                        checked={formData.terms_accepted} 
+                                        onChange={handleChange}
+                                        className={`h-6 w-6 text-blue-600 focus:ring-blue-500 border-gray-300 rounded 
+                                            ${errors.terms_accepted ? 'border-red-500' : ''}`}
+                                    />
+                                    <span className="text-xl text-gray-700">I accept the</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowTermsModal(true)}
+                                        className="text-xl text-blue-600 hover:text-blue-800 underline font-medium"
+                                    >
+                                        terms and conditions
+                                    </button>
+                                </div>
+                                {errors.terms_accepted && (
+                                    <p className="text-sm text-red-500 mt-2 ml-9">
+                                        {errors.terms_accepted}
+                                    </p>
+                                )}
                             </div>
-                            <div className={`flex items-center ${passwordStrength.special ? 'text-green-500' : 'text-gray-500'}`}>
-                                <span className="mr-1">✓</span>
-                                <span>One special character (!@#$%^&*)</span>
+
+                            {/* Key */}
+                            <div className="flex-1">
+                                <label className="block text-xl text-gray-700 mb-2">Key <span className="text-red-500">*</span></label>
+                                <input 
+                                    type="text" 
+                                    name="key" 
+                                    value={formData.key} 
+                                    onChange={handleChange} 
+                                    required 
+                                    className={`w-full p-4 text-lg border rounded-lg ${errors.key ? 'border-red-500' : 'border-gray-300'}`}
+                                    placeholder="Enter your key"
+                                />
+                                {errors.key && <p className="text-sm text-red-500 mt-2">{errors.key}</p>}
                             </div>
                         </div>
-                        {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password}</p>}
                     </div>
 
-                    {/* Father's/Husband's Name */}
-                    <div>
-                        <label className="block text-gray-600 text-sm mb-1">Father&apos;s/Husband&apos;s Name <span className="text-red-500">*</span></label>
-                        <input 
-                            type="text" 
-                            name="guardian_name" 
-                            value={formData.guardian_name} 
-                            onChange={handleChange} 
-                            required 
-                            className={`w-full p-2 border rounded-lg ${errors.guardian_name ? 'border-red-500' : ''}`}
-                            autoComplete="off"
-                            maxLength={50}
-                        />
-                        {errors.guardian_name && <p className="text-xs text-red-500 mt-1">{errors.guardian_name}</p>}
-                    </div>
-
-                    {/* Date of Birth */}
-                    <div>
-                        <label className="block text-gray-600 text-sm mb-1">Date of Birth <span className="text-red-500">*</span></label>
-                        <input 
-                            type="date" 
-                            name="date_of_birth" 
-                            value={formData.date_of_birth} 
-                            onChange={handleChange} 
-                            required 
-                            className="w-full p-2 border rounded-lg"
-                        />
-                    </div>
-
-                    {/* Gender */}
-                    <div>
-                        <label className="block text-gray-600 text-sm mb-1">Gender <span className="text-red-500">*</span></label>
-                        <select 
-                            name="gender" 
-                            value={formData.gender} 
-                            onChange={handleChange} 
-                            required 
-                            className="w-full p-2 border rounded-lg"
+                    {/* Register Button */}
+                    <div className="flex justify-center mt-10">
+                        <button 
+                            type="submit" 
+                            className={`px-16 py-4 text-xl rounded-lg font-semibold transition-colors ${
+                                isUnderAge 
+                                ? 'bg-gray-400 cursor-not-allowed' 
+                                : 'bg-blue-600 text-white hover:bg-blue-700'
+                            }`}
+                            disabled={isUnderAge}
                         >
-                            <option value="">Select</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Transgender">Transgender</option>
-                        </select>
+                            Register
+                        </button>
                     </div>
-
-                    {/* Mobile Number */}
-                    <div>
-                        <label className="block text-gray-600 text-sm mb-1">Mobile Number <span className="text-red-500">*</span></label>
-                        <input 
-                            type="tel" 
-                            name="mobile_number" 
-                            value={formData.mobile_number} 
-                            onChange={handleChange} 
-                            required 
-                            className={`w-full p-2 border rounded-lg ${errors.mobile_number ? 'border-red-500' : ''}`}
-                            maxLength={10}
-                            placeholder="Enter 10-digit mobile number"
-                        />
-                        {errors.mobile_number && <p className="text-xs text-red-500 mt-1">{errors.mobile_number}</p>}
-                    </div>
-
-                    {/* State */}
-                    <div>
-                        <label className="block text-gray-600 text-sm mb-1">State <span className="text-red-500">*</span></label>
-                        <select 
-                            name="state_id" 
-                            value={formData.state_id} 
-                            onChange={handleChange} 
-                            required 
-                            className={`w-full p-2 border rounded-lg ${errors.state_id ? 'border-red-500' : ''}`}
-                        >
-                            <option value="">Select</option>
-                            {states.map((state) => (
-                                <option key={state.id} value={state.id}>{state.name}</option>
-                            ))}
-                        </select>
-                        {errors.state && <p className="text-xs text-red-500 mt-1">{errors.state}</p>}
-                    </div>
-
-                    {/* District */}
-                    <div>
-                        <label className="block text-gray-600 text-sm mb-1">District <span className="text-red-500">*</span></label>
-                        <select 
-                            name="district_id" 
-                            value={formData.district_id} 
-                            onChange={handleChange} 
-                            required 
-                            className={`w-full p-2 border rounded-lg ${errors.district_id ? 'border-red-500' : ''}`}
-                        >
-                            <option value="">Select</option>
-                            {districts.map((district) => (
-                                <option key={district.id} value={district.id}>{district.name}</option>
-                            ))}
-                        </select>
-                        {errors.district && <p className="text-xs text-red-500 mt-1">{errors.district}</p>}
-                    </div>
-
-                    {/* Terms & Conditions - Full width */}
-                    <div className="flex items-center col-span-2 space-x-2">
-                        <input type="checkbox" name="terms_accepted" checked={formData.terms_accepted} onChange={handleChange} />
-                        <span className="text-sm">I agree to the</span>
-                        <a 
-                            href="/terms-and-conditions.html" 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="text-blue-600 hover:text-blue-800 underline text-sm"
-                        >
-                            terms and conditions
-                        </a>
-                    </div>
-
-                    <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 col-span-2">
-                        Register
-                    </button>
                 </form>
             </div>
-
+            
+            <TermsModal 
+                isOpen={showTermsModal} 
+                onClose={() => setShowTermsModal(false)} 
+            />
+            
             {/* Popup */}
             {showPopup && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn">
