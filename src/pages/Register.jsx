@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import PropTypes from 'prop-types';
 import { termsAndConditions } from '../data/termsAndConditions';
+import { Link } from 'react-router-dom';
 
 const Register = () => {
     const [formData, setFormData] = useState({
@@ -15,7 +16,7 @@ const Register = () => {
         district_id: "", 
         terms_accepted: false,
         confirm_password: "",
-        email: "",
+        email_id: "",
         key: ""
     });
 
@@ -28,9 +29,10 @@ const Register = () => {
         district_id: "",
         date_of_birth: "",
         confirm_password: "",
-        email: "",
+        email_id: "",
         key: "",
-        terms_accepted: ""
+        terms_accepted: "",
+        servererror: "",
     });
 
     const [passwordStrength, setPasswordStrength] = useState({
@@ -50,6 +52,7 @@ const Register = () => {
     const [age, setAge] = useState(null);
     const [isUnderAge, setIsUnderAge] = useState(false);
     const [showTermsModal, setShowTermsModal] = useState(false);
+    const [showError, setShowError] = useState(false);
 
     // Fetch states from master table (Mock API)
     useEffect(() => {
@@ -87,7 +90,7 @@ const Register = () => {
     // Validate name input
     const validateNameInput = (name, value) => {
         if (value.length > 50) {
-            return "Maximum 50 characters allowed";
+            return "Maximum 50 characters allowed";            
         }
         if (!/^[a-zA-Z\s]*$/.test(value)) {
             return "Only alphabets and spaces allowed";
@@ -253,6 +256,7 @@ const Register = () => {
         });
     };
 
+
     // Handle form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -286,7 +290,7 @@ const Register = () => {
                 ...prev,
                 mobile_number: mobileError
             }));
-            alert("Please enter a valid mobile number.");
+            alert("Enter a valid mobile number.");
             return;
         }
 
@@ -322,7 +326,7 @@ const Register = () => {
 
         // Check if all fields are filled
         for (let key in formData) {
-            if (!formData[key] && key !== 'email') {
+            if (!formData[key] && key !== 'email_id') {
                 alert("All fields are required!");
                 return;
             }
@@ -342,31 +346,70 @@ const Register = () => {
             const response = await axios.post("http://localhost:5001/members/register", dataToSubmit);
             console.log(response.data);
             setUserDetails(response.data);
-            setShowPopup(true);
+            // setShowPopup(true);
             // Clear form data after successful registration
             setFormData({
                 name: "",
-                password: "",
                 guardian_name: "",
                 date_of_birth: "",
                 gender: "",
                 mobile_number: "",
+                email_id: "",
                 state_id: "", 
                 district_id: "", 
                 terms_accepted: false,
-                confirm_password: "",
-                email: "",
+                password: "",
+                confirm_password: "",                
                 key: ""
             });
+            setErrors({
+                name: "",
+                guardian_name: "",
+                mobile_number: "",
+                password: "",
+                state_id: "",
+                district_id: "",
+                date_of_birth: "",
+                confirm_password: "",
+                email_id: "",
+                key: "",
+                terms_accepted: "",
+                servererror: ""
+            });
+            setShowTermsModal(false);
+            setShowPopup(true);
+            setShowError(false);
         } catch (err) {
+
+            console.log("Server Error: ");
+            console.log(err.response.data);
+            //console.log(err.response.data.error);
+
             if (err.response && err.response.data) {
-                const errorMessage = err.response.data.details
-                    ?.map(detail => `${detail.field}: ${detail.message}`)
-                    .join("\n") || err.response.data.error;
-        
-                alert("Registration failed: " + errorMessage);
+                // const errorMessage = err.response.data.details
+                //     ?.map(detail => `${detail.field}: ${detail.message}`)
+                //     .join("\n") || err.response.data.error;
+                
+                const errorMessage = Array.isArray(err.response.data.details)
+                    ? err.response.data.details.map(detail => 
+                        typeof detail === "object" 
+                            ? `${detail.field}: ${detail.message}` 
+                            : detail // Handle text-only errors like ['mobile_number already exists']
+    ).join("\n")
+    : err.response.data.details || err.response.data.error || "An unknown error occurred";
+
+
+                setShowError(true);
+                setErrors(prev => ({
+                    ...prev,
+                    servererror: errorMessage
+                }));
             } else {
-                alert("Registration failed: Please try again");
+                setShowError(true);
+                setErrors(prev => ({
+                    ...prev,
+                    servererror: "Registration failed: Please try again"
+                }));
             }
         }
         
@@ -423,6 +466,16 @@ const Register = () => {
         <div className="flex justify-center items-center min-h-screen bg-gray-100 py-12">
             <div className="bg-white p-10 rounded-xl shadow-lg w-[1400px] mb-8">
                 <h2 className="text-4xl font-bold mb-10 text-center text-gray-800">Registration Form</h2>
+
+
+                {showError && (
+                    <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 w-full" role="alert">
+                        {Object.keys(errors).map((key) => (
+                            errors[key] && <li key={key}>{errors[key]}</li>
+                        ))}
+                    </div>
+                )}
+
                 <form onSubmit={handleSubmit} className="space-y-8">
                     <div className="grid grid-cols-2 gap-x-12 gap-y-8">
                         {/* Name */}
@@ -516,13 +569,13 @@ const Register = () => {
                             </label>
                             <input 
                                 type="email" 
-                                name="email" 
-                                value={formData.email} 
+                                name="email_id" 
+                                value={formData.email_id} 
                                 onChange={handleChange} 
-                                className={`w-full p-4 text-lg border rounded-lg ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
+                                className={`w-full p-4 text-lg border rounded-lg ${errors.email_id ? 'border-red-500' : 'border-gray-300'}`}
                                 placeholder="Enter your email address"
                             />
-                            {errors.email && <p className="text-sm text-red-500 mt-2">{errors.email}</p>}
+                            {errors.email_id && <p className="text-sm text-red-500 mt-2">{errors.email_id}</p>}
                         </div>
 
                         {/* State */}
@@ -724,6 +777,26 @@ const Register = () => {
                                         <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path>
                                         </svg>
+                                        Name
+                                    </span> 
+                                    <span className="font-medium text-blue-700">{userDetails?.user?.name}</span>
+                                </p>
+                                <div className="border-t border-blue-200"></div>
+                                <p className="text-gray-800 text-lg flex items-center justify-between group hover:bg-blue-50 p-2 rounded transition-all">
+                                    <span className="font-bold flex items-center">
+                                        <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path>
+                                        </svg>
+                                        Password
+                                    </span> 
+                                    <span className="font-medium text-blue-700">{userDetails?.user?.password}</span>
+                                </p>
+                                <div className="border-t border-blue-200"></div>
+                                <p className="text-gray-800 text-lg flex items-center justify-between group hover:bg-blue-50 p-2 rounded transition-all">
+                                    <span className="font-bold flex items-center">
+                                        <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path>
+                                        </svg>
                                         Account ID
                                     </span> 
                                     <span className="font-medium text-blue-700">{userDetails?.user?.account_number}</span>
@@ -741,15 +814,16 @@ const Register = () => {
                             </div>
                         </div>
                         <div className="text-center">
-                            <button 
-                                onClick={() => setShowPopup(false)} 
-                                className="bg-blue-600 text-white px-10 py-3 rounded-lg hover:bg-blue-700 transition-all duration-300 font-medium hover:shadow-lg transform hover:-translate-y-0.5"
+                            <Link 
+                                to="/login" 
+                                className="bg-blue-600 text-white px-10 py-3 rounded-lg hover:bg-blue-700 transition-all duration-300 font-medium hover:shadow-lg transform hover:-translate-y-0.5 inline-block"
                             >
-                                Close
-                            </button>
+                                Login
+                            </Link>
                         </div>
                     </div>
                 </div>
+                
             )}
         </div>
     );
