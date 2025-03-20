@@ -17,7 +17,7 @@ const Register = () => {
         terms_accepted: false,
         confirm_password: "",
         email_id: "",
-        key: ""
+        pay_key: ""
     });
 
     const [errors, setErrors] = useState({
@@ -30,7 +30,7 @@ const Register = () => {
         date_of_birth: "",
         confirm_password: "",
         email_id: "",
-        key: "",
+        pay_key: "",
         terms_accepted: "",
         servererror: "",
     });
@@ -264,7 +264,7 @@ const Register = () => {
 
         // Check for validation errors
         if (errors.name || errors.guardian_name || errors.mobile_number || errors.password || 
-            errors.date_of_birth || errors.confirm_password || errors.key) {
+            errors.date_of_birth || errors.confirm_password || errors.pay_key) {
             alert("Please fix the validation errors before submitting.");
             return;
         }
@@ -361,7 +361,7 @@ const Register = () => {
                 terms_accepted: false,
                 password: "",
                 confirm_password: "",                
-                key: ""
+                pay_key: ""
             });
             setErrors({
                 name: "",
@@ -373,7 +373,7 @@ const Register = () => {
                 date_of_birth: "",
                 confirm_password: "",
                 email_id: "",
-                key: "",
+                pay_key: "",
                 terms_accepted: "",
                 servererror: ""
             });
@@ -700,20 +700,21 @@ const Register = () => {
                                 )}
                             </div>
 
-                            {/* Key */}
+                            {/* Payment Key */}
                             <div className="flex-1">
-                                <label className="block text-xl text-gray-700 mb-2">Key <span className="text-red-500">*</span></label>
+                                <label className="block text-xl text-gray-700 mb-2">Payment Key <span className="text-red-500">*</span></label>
                                 <input 
                                     type="text" 
-                                    name="key" 
-                                    value={formData.key} 
-                                    onChange={handleChange} 
+                                    name="pay_key" 
+                                    value={formData.pay_key} 
                                     required 
-                                    className={`w-full p-4 text-lg border rounded-lg ${errors.key ? 'border-red-500' : 'border-gray-300'}`}
-                                    placeholder="Enter your key"
+                                    onChange={handleChange}
+                                    maxLength={8}
+                                    className={`w-full p-4 text-lg border rounded-lg ${errors.pay_key ? 'border-red-500' : 'border-gray-300'}`}
+                                    placeholder="Enter your payment key"
                                 />
-                                {errors.key && <p className="text-sm text-red-500 mt-2">{errors.key}</p>}
-                            </div>
+                                {errors.pay_key && <p className="text-sm text-red-500 mt-2">{errors.pay_key}</p>}
+                            </div>  
                         </div>
                     </div>
 
