@@ -13,6 +13,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import KycForm from "./pages/KycForm";
 import BankForm from "./pages/BankForm";
 import ProfileForm from "./pages/ProfileForm";
+import ProfileEditForm from "./pages/ProfileEditForm";
 
 function App() {
     return (
@@ -48,6 +49,11 @@ function App() {
                         <Route path="profileform" element={
                             <ProtectedRoute>
                                 <ProfileForm />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="profileeditform" element={
+                            <ProtectedRoute>
+                                <ProfileEditForm />
                             </ProtectedRoute>
                         } />
                         <Route path="*" element={<NotFound />} />
