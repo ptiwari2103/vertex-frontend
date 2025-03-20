@@ -53,6 +53,7 @@ const Register = () => {
     const [isUnderAge, setIsUnderAge] = useState(false);
     const [showTermsModal, setShowTermsModal] = useState(false);
     const [showError, setShowError] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Fetch states from master table (Mock API)
     useEffect(() => {
@@ -338,15 +339,15 @@ const Register = () => {
         }
       
         try {
-            const dataToSubmit = { ...formData,
-                date_of_birth: formData.date_of_birth.split("-").reverse().join("-"), 
-            };
-            console.log(dataToSubmit);
+            setIsSubmitting(true); // Start loading
+            // const dataToSubmit = { ...formData,
+            //     date_of_birth: formData.date_of_birth.split("-").reverse().join("-"), 
+            // };
+            console.log(formData);
             
-            const response = await axios.post("http://localhost:5001/members/register", dataToSubmit);
+            const response = await axios.post("http://localhost:5001/members/register", formData);
             console.log(response.data);
             setUserDetails(response.data);
-            // setShowPopup(true);
             // Clear form data after successful registration
             setFormData({
                 name: "",
@@ -380,24 +381,17 @@ const Register = () => {
             setShowPopup(true);
             setShowError(false);
         } catch (err) {
-
             console.log("Server Error: ");
             console.log(err.response.data);
-            //console.log(err.response.data.error);
 
             if (err.response && err.response.data) {
-                // const errorMessage = err.response.data.details
-                //     ?.map(detail => `${detail.field}: ${detail.message}`)
-                //     .join("\n") || err.response.data.error;
-                
                 const errorMessage = Array.isArray(err.response.data.details)
                     ? err.response.data.details.map(detail => 
                         typeof detail === "object" 
                             ? `${detail.field}: ${detail.message}` 
-                            : detail // Handle text-only errors like ['mobile_number already exists']
+                            : detail
     ).join("\n")
     : err.response.data.details || err.response.data.error || "An unknown error occurred";
-
 
                 setShowError(true);
                 setErrors(prev => ({
@@ -411,8 +405,9 @@ const Register = () => {
                     servererror: "Registration failed: Please try again"
                 }));
             }
+        } finally {
+            setIsSubmitting(false); // Stop loading regardless of success or failure
         }
-        
     };
 
     const TermsModal = ({ isOpen, onClose }) => {
@@ -466,15 +461,6 @@ const Register = () => {
         <div className="flex justify-center items-center min-h-screen bg-gray-100 py-12">
             <div className="bg-white p-10 rounded-xl shadow-lg w-[1400px] mb-8">
                 <h2 className="text-4xl font-bold mb-10 text-center text-gray-800">Registration Form</h2>
-
-
-                {showError && (
-                    <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 w-full" role="alert">
-                        {Object.keys(errors).map((key) => (
-                            errors[key] && <li key={key}>{errors[key]}</li>
-                        ))}
-                    </div>
-                )}
 
                 <form onSubmit={handleSubmit} className="space-y-8">
                     <div className="grid grid-cols-2 gap-x-12 gap-y-8">
@@ -731,18 +717,36 @@ const Register = () => {
                         </div>
                     </div>
 
+                    {showError && (
+                    <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 w-full" role="alert">
+                        {Object.keys(errors).map((key) => (
+                            errors[key] && <li key={key}>{errors[key]}</li>
+                        ))}
+                    </div>
+                    )}
+
                     {/* Register Button */}
                     <div className="flex justify-center mt-10">
                         <button 
                             type="submit" 
-                            className={`px-16 py-4 text-xl rounded-lg font-semibold transition-colors ${
-                                isUnderAge 
+                            className={`px-16 py-4 text-xl rounded-lg font-semibold transition-colors flex items-center justify-center ${
+                                isUnderAge || isSubmitting
                                 ? 'bg-gray-400 cursor-not-allowed' 
                                 : 'bg-blue-600 text-white hover:bg-blue-700'
                             }`}
-                            disabled={isUnderAge}
+                            disabled={isUnderAge || isSubmitting}
                         >
-                            Register
+                            {isSubmitting ? (
+                                <>
+                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Processing...
+                                </>
+                            ) : (
+                                'Register'
+                            )}
                         </button>
                     </div>
                 </form>
@@ -775,7 +779,7 @@ const Register = () => {
                                 <p className="text-gray-800 text-lg flex items-center justify-between group hover:bg-blue-50 p-2 rounded transition-all">
                                     <span className="font-bold flex items-center">
                                         <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path>
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                         </svg>
                                         Name
                                     </span> 
@@ -785,7 +789,7 @@ const Register = () => {
                                 <p className="text-gray-800 text-lg flex items-center justify-between group hover:bg-blue-50 p-2 rounded transition-all">
                                     <span className="font-bold flex items-center">
                                         <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path>
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7z"></path>
                                         </svg>
                                         Password
                                     </span> 
@@ -795,7 +799,7 @@ const Register = () => {
                                 <p className="text-gray-800 text-lg flex items-center justify-between group hover:bg-blue-50 p-2 rounded transition-all">
                                     <span className="font-bold flex items-center">
                                         <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path>
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7z"></path>
                                         </svg>
                                         Account ID
                                     </span> 
