@@ -12,15 +12,15 @@ const KycForm = () => {
     });
 
     const [documents, setDocuments] = useState({
-        pan_front: null,
-        aadhar_front: null,
-        aadhar_back: null
+        pan_number_image: null,
+        aadhar_number_image_front: null,
+        aadhar_number_image_back: null
     });
 
     const [documentPreviews, setDocumentPreviews] = useState({
-        pan_front: null,
-        aadhar_front: null,
-        aadhar_back: null
+        pan_number_image: null,
+        aadhar_number_image_front: null,
+        aadhar_number_image_back: null
     });
 
     const [loading, setLoading] = useState(false);
@@ -52,31 +52,18 @@ const KycForm = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prevState => ({
-            ...prevState,
+        setFormData(prev => ({
+            ...prev,
             [name]: value
         }));
-        // Clear error when user starts typing
-        if (errors[name]) {
-            setErrors(prev => ({ ...prev, [name]: null }));
-        }
     };
 
     const handleFileChange = (e) => {
         const { name, files } = e.target;
         if (files && files[0]) {
-            // Validate file type
-            const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-            if (!validTypes.includes(files[0].type)) {
-                setErrors(prev => ({
-                    ...prev,
-                    [name]: 'Please upload only JPG, JPEG or PNG files'
-                }));
-                return;
-            }
-
-            // Validate file size (5MB)
-            if (files[0].size > 5 * 1024 * 1024) {
+            const file = files[0];
+            
+            if (file.size > 5 * 1024 * 1024) {
                 setErrors(prev => ({
                     ...prev,
                     [name]: 'File size should be less than 5MB'
@@ -84,21 +71,19 @@ const KycForm = () => {
                 return;
             }
 
-            const previewUrl = URL.createObjectURL(files[0]);
-            setDocumentPreviews(prev => ({
-                ...prev,
-                [name]: previewUrl
-            }));
-
             setDocuments(prev => ({
                 ...prev,
-                [name]: files[0]
+                [name]: file
             }));
 
-            // Clear error when valid file is uploaded
-            if (errors[name]) {
-                setErrors(prev => ({ ...prev, [name]: null }));
-            }
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setDocumentPreviews(prev => ({
+                    ...prev,
+                    [name]: reader.result
+                }));
+            };
+            reader.readAsDataURL(file);
         }
     };
 
@@ -111,26 +96,19 @@ const KycForm = () => {
 
         setLoading(true);
         const formDataToSend = new FormData();
-
-        // Append form fields
-        Object.keys(formData).forEach(key => {
-            if (formData[key]) {
-                formDataToSend.append(key, formData[key]);
-            }
-        });
-
-        // Append user ID
         formDataToSend.append('user_id', auth.user_id);
-
-        // Append files
-        Object.keys(documents).forEach(key => {
-            if (documents[key]) {
-                formDataToSend.append(key, documents[key]);
+        formDataToSend.append('pan_number', formData.pan_number);
+        formDataToSend.append('aadhar_number', formData.aadhar_number);
+        
+        Object.entries(documents).forEach(([key, file]) => {
+            if (file) {
+                formDataToSend.append(key, file);
             }
         });
 
         try {
-            const response = await axios.post('http://localhost:5001/members/kyc',
+            const response = await axios.post(
+                'http://localhost:5001/members/kyc',
                 formDataToSend,
                 {
                     headers: {
@@ -139,192 +117,129 @@ const KycForm = () => {
                     }
                 }
             );
+
             if (response.data.success) {
-                // Update KYC status in AuthContext
-                updateKycStatus('Submitted');
-                alert('KYC details submitted successfully');
-                navigate('/dashboard');
+                // updateKycStatus(true);
+                // navigate('/dashboard');
             }
         } catch (error) {
-            const errorMsg = error.response?.data?.message || 'Error submitting KYC details';
-            setErrors(prev => ({ ...prev, submit: errorMsg }));
+            setErrors({ submit: error.response?.data?.message || 'Failed to submit KYC details' });
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="container mx-auto px-4 py-8">
-            <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
-                <h2 className="text-2xl font-bold text-center text-gray-800 mb-8">KYC Verification Form</h2>
+        <div className="container mx-auto px-2 mt-2">
+            <div className="bg-white p-4 rounded-lg shadow-md">
+                <h2 className="text-xl font-bold text-center text-gray-800 mb-4">KYC Details</h2>
 
                 {errors.submit && (
-                    <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    <div className="mb-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
                         {errors.submit}
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* User Details Section */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded-lg mb-6">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Full Name
-                            </label>
-                            <input
-                                type="text"
-                                value={auth.name || ''}
-                                disabled
-                                className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-gray-700 cursor-not-allowed"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                User ID
-                            </label>
-                            <input
-                                type="text"
-                                value={auth.user_id || ''}
-                                disabled
-                                className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-gray-700 cursor-not-allowed"
-                            />
-                        </div>
-                    </div>
-
-                    {/* KYC Details */}
-                    <div className="space-y-6">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                PAN Number
-                            </label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">PAN Number</label>
                             <input
                                 type="text"
                                 name="pan_number"
                                 value={formData.pan_number}
                                 onChange={handleChange}
                                 required
+                                maxLength={10}
+                                className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 placeholder="ABCDE1234F"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                             {errors.pan_number && (
-                                <p className="mt-1 text-sm text-red-600">{errors.pan_number}</p>
+                                <p className="text-red-500 text-xs mt-1">{errors.pan_number}</p>
                             )}
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Aadhar Number
-                            </label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Aadhar Number</label>
                             <input
                                 type="text"
                                 name="aadhar_number"
                                 value={formData.aadhar_number}
                                 onChange={handleChange}
                                 required
+                                maxLength={12}
+                                className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 placeholder="123456789012"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                             {errors.aadhar_number && (
-                                <p className="mt-1 text-sm text-red-600">{errors.aadhar_number}</p>
+                                <p className="text-red-500 text-xs mt-1">{errors.aadhar_number}</p>
                             )}
-                        </div>
-
-                        {/* Document Upload Section */}
-                        <div className="space-y-6">
-                            <h3 className="text-lg font-medium text-gray-900">Document Upload</h3>
-                            
-                            {/* PAN Card Upload */}
-                            <div className="space-y-4">
-                                <label className="block text-sm font-medium text-gray-700">
-                                    PAN Card (Front)
-                                </label>
-                                <div className="flex items-center space-x-4">
-                                    <input
-                                        type="file"
-                                        name="pan_front"
-                                        onChange={handleFileChange}
-                                        accept="image/*"
-                                        required
-                                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                                    />
-                                    {documentPreviews.pan_front && (
-                                        <img
-                                            src={documentPreviews.pan_front}
-                                            alt="PAN Card Preview"
-                                            className="h-20 w-auto object-contain"
-                                        />
-                                    )}
-                                </div>
-                                {errors.pan_front && (
-                                    <p className="mt-1 text-sm text-red-600">{errors.pan_front}</p>
-                                )}
-                            </div>
-
-                            {/* Aadhar Card Upload */}
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        Aadhar Card (Front)
-                                    </label>
-                                    <div className="flex items-center space-x-4">
-                                        <input
-                                            type="file"
-                                            name="aadhar_front"
-                                            onChange={handleFileChange}
-                                            accept="image/*"
-                                            required
-                                            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                                        />
-                                        {documentPreviews.aadhar_front && (
-                                            <img
-                                                src={documentPreviews.aadhar_front}
-                                                alt="Aadhar Front Preview"
-                                                className="h-20 w-auto object-contain"
-                                            />
-                                        )}
-                                    </div>
-                                    {errors.aadhar_front && (
-                                        <p className="mt-1 text-sm text-red-600">{errors.aadhar_front}</p>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        Aadhar Card (Back)
-                                    </label>
-                                    <div className="flex items-center space-x-4">
-                                        <input
-                                            type="file"
-                                            name="aadhar_back"
-                                            onChange={handleFileChange}
-                                            accept="image/*"
-                                            required
-                                            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                                        />
-                                        {documentPreviews.aadhar_back && (
-                                            <img
-                                                src={documentPreviews.aadhar_back}
-                                                alt="Aadhar Back Preview"
-                                                className="h-20 w-auto object-contain"
-                                            />
-                                        )}
-                                    </div>
-                                    {errors.aadhar_back && (
-                                        <p className="mt-1 text-sm text-red-600">{errors.aadhar_back}</p>
-                                    )}
-                                </div>
-                            </div>
                         </div>
                     </div>
 
-                    <div className="flex justify-center pt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">PAN Card (Front)</label>
+                            <input
+                                type="file"
+                                name="pan_number_image"
+                                onChange={handleFileChange}
+                                accept="image/*"
+                                required
+                                className="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                            />
+                            {documentPreviews.pan_number_image && (
+                                <img src={documentPreviews.pan_number_image} alt="PAN Card Preview" className="mt-2 h-20 object-contain" />
+                            )}
+                            {errors.pan_number_image && (
+                                <p className="text-red-500 text-xs mt-1">{errors.pan_number_image}</p>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Aadhar Card (Front)</label>
+                            <input
+                                type="file"
+                                name="aadhar_number_image_front"
+                                onChange={handleFileChange}
+                                accept="image/*"
+                                required
+                                className="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                            />
+                            {documentPreviews.aadhar_number_image_front && (
+                                <img src={documentPreviews.aadhar_number_image_front} alt="Aadhar Front Preview" className="mt-2 h-20 object-contain" />
+                            )}
+                            {errors.aadhar_number_image_front && (
+                                <p className="text-red-500 text-xs mt-1">{errors.aadhar_number_image_front}</p>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Aadhar Card (Back)</label>
+                            <input
+                                type="file"
+                                name="aadhar_number_image_back"
+                                onChange={handleFileChange}
+                                accept="image/*"
+                                required
+                                className="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                            />
+                            {documentPreviews.aadhar_number_image_back && (
+                                <img src={documentPreviews.aadhar_number_image_back} alt="Aadhar Back Preview" className="mt-2 h-20 object-contain" />
+                            )}
+                            {errors.aadhar_number_image_back && (
+                                <p className="text-red-500 text-xs mt-1">{errors.aadhar_number_image_back}</p>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="flex justify-start">
                         <button
                             type="submit"
                             disabled={loading}
-                            className={`px-6 py-3 bg-blue-600 text-white rounded-md font-medium ${
+                            className={`px-4 py-1 bg-blue-600 text-white rounded-md ${
                                 loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
-                            }`}
+                            } focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
                         >
                             {loading ? 'Submitting...' : 'Submit KYC Details'}
                         </button>
