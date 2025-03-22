@@ -4,7 +4,7 @@ import { AuthContext } from "../contexts/authContext";
 
 const HeaderMenu = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const { auth, logout } = useContext(AuthContext);
+    const { logout, userdata, isAuthenticated } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -12,10 +12,12 @@ const HeaderMenu = () => {
         logout();
         navigate('/', { replace: true });
     };
-
+    console.log("Auth Context in HeaderMenu:");
+    console.log(userdata);
+    
     return (
         <nav className="bg-blue-500 p-3 text-white w-full flex justify-between items-center">
-            {auth.user_id ? (
+            {isAuthenticated ? (
                 <>
                     <ul className="flex space-x-6">
                         <li><NavLink to="/dashboard" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Dashboard</NavLink></li>
@@ -29,13 +31,13 @@ const HeaderMenu = () => {
                             className="flex items-center space-x-2"
                             onClick={() => setIsOpen(!isOpen)}
                         >
-                            <span className="hidden sm:block">{auth.name}</span>
+                            <span className="hidden sm:block">{userdata?.name || "N/A"}</span>
                         </button>
 
                         {isOpen && (
                             <div className="absolute right-0 mt-2 w-40 bg-white text-black rounded shadow-lg">
                                 <ul className="flex flex-col">
-                                    <li>
+                                    {/* <li>
                                         <NavLink
                                             to="/profile"
                                             className="block px-4 py-2 hover:bg-gray-200"
@@ -43,7 +45,7 @@ const HeaderMenu = () => {
                                         >
                                             Profile
                                         </NavLink>
-                                    </li>
+                                    </li> */}
                                     <li>
                                         <button
                                             className="block px-4 py-2 w-full text-left hover:bg-gray-200"

@@ -1,17 +1,16 @@
-import React, { useContext } from "react";
-import axios from "axios";
+import { useContext } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../contexts/authContext";
 
 function Dashboard() {    
-    const { auth } = useContext(AuthContext);
+    const { userdata } = useContext(AuthContext);
 
     return (
         <div className="flex justify-center items-center min-h-[calc(100vh-64px)]">
             {/* Show this message only if kyc_status is not true (i.e., 0 or false) */}
-            {console.log("===="+auth.kyc_status)}
+            {console.log("===="+userdata?.profile?.kyc_status)}
 
-            {auth.kyc_status !=="Submitted" && (
+            {userdata?.profile?.kyc_status !=="Submitted" && (
                 <div className="text-center">
                     <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-6 rounded-lg shadow-lg max-w-lg mb-4">
                         <p className="font-bold text-xl mb-2">KYC Status: Pending</p>

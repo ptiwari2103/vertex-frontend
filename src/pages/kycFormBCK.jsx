@@ -1,10 +1,10 @@
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../contexts/authContext';
 
 const KycForm = () => {
-    const { userdata, updateuserdata } = useContext(AuthContext);
+    const { auth, updateKycStatus } = useContext(AuthContext);
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         pan_number: '',
@@ -23,37 +23,8 @@ const KycForm = () => {
         aadhar_number_image_back: null
     });
 
-    useEffect(() => {
-        console.log("Update KycForm in useEffect");
-        const pan_number = userdata.profile.pan_number;
-        const aadhar_number = userdata.profile.aadhar_number;
-        const pan_number_image = userdata.profile.pan_number_image;
-        const aadhar_number_image_front = userdata.profile.aadhar_number_image_front;
-        const aadhar_number_image_back = userdata.profile.aadhar_number_image_back;
-        
-        setFormData(prev => ({
-            ...prev,
-            pan_number,
-            aadhar_number
-        }));
-        setDocuments(prev => ({
-            ...prev,
-            pan_number_image,
-            aadhar_number_image_front,
-            aadhar_number_image_back
-        }));
-        setDocumentPreviews(prev => ({
-            ...prev,
-            pan_number_image,
-            aadhar_number_image_front,
-            aadhar_number_image_back
-        }));
-    }, [userdata]);
-
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
-    const [showSuccess, setShowSuccess] = useState(false);
-    const [successMessages, setSuccessMessages] = useState({serverresponse: ""});
 
     const validateForm = () => {
         const newErrors = {};
@@ -125,7 +96,7 @@ const KycForm = () => {
 
         setLoading(true);
         const formDataToSend = new FormData();
-        formDataToSend.append('user_id', userdata.user_id);
+        formDataToSend.append('user_id', auth.user_id);
         formDataToSend.append('pan_number', formData.pan_number);
         formDataToSend.append('aadhar_number', formData.aadhar_number);
         
@@ -141,22 +112,17 @@ const KycForm = () => {
                 formDataToSend,
                 {
                     headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                        Authorization: `Bearer ${auth.token}`,
                         'Content-Type': 'multipart/form-data'
                     }
                 }
             );
 
             if (response.data.success) {
-                updateuserdata(response.data.data);
-                setShowSuccess(true);
-                setSuccessMessages(prev => ({
-                    ...prev,
-                    serverresponse: response.data.message
-                }));
-                // navigate('/dashboard');                
+                // updateKycStatus(true);
+                // navigate('/dashboard');
+                console.log(response.data);
             }
-            console.log(response.data);
         } catch (error) {
             setErrors({ submit: error.response?.data?.message || 'Failed to submit KYC details' });
         } finally {
@@ -172,14 +138,6 @@ const KycForm = () => {
                 {errors.submit && (
                     <div className="mb-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
                         {errors.submit}
-                    </div>
-                )}
-
-                {showSuccess && (
-                    <div className="mb-4 p-2 bg-green-100 border border-green-400 text-green-700 rounded text-sm">
-                        {Object.keys(successMessages).map((key) => (
-                            successMessages[key] && <li key={key}>{successMessages[key]}</li>
-                        ))}
                     </div>
                 )}
 

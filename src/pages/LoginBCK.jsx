@@ -4,7 +4,7 @@ import { AuthContext } from "../contexts/authContext";
 import { useNavigate, Navigate } from "react-router-dom";
 
 const Login = () => {
-    const { login, isAuthenticated } = useContext(AuthContext);
+    const { login, auth } = useContext(AuthContext);
     const [userId, setUserId] = useState("");
     const [password, setPassword] = useState("");
     const [showError, setShowError] = useState(false);
@@ -83,10 +83,9 @@ const Login = () => {
 
     // If user is already authenticated, redirect to dashboard
     // console.log("login page isAuthenticated: ", isAuthenticated);
-    // console.log("login page auth: ", auth);
-    // console.log("login page auth2: ", auth.user_id);
-
-    if (isAuthenticated) {
+    console.log("login page auth: ", auth);
+    console.log("login page auth2: ", auth.user_id);
+    if (auth.user_id) {
         return <Navigate to="/dashboard" replace />;
     }
 
@@ -98,7 +97,6 @@ const Login = () => {
             const response = await axios.post("http://localhost:5001/members/login", { "user_id":userId, "password":password });
             console.log(response.data.data);
             login(response.data.data);
-            
             navigate('/dashboard', { replace: true });
             // Clear form fields
             setUserId("");
@@ -113,8 +111,8 @@ const Login = () => {
                         typeof detail === "object" 
                             ? `${detail.field}: ${detail.message}` 
                             : detail
-                    ).join("\n")
-                    : err.response.data.details || err.response.data.error || err.response.data.message || "An unknown error occurred";
+    ).join("\n")
+    : err.response.data.details || err.response.data.error || err.response.data.message || "An unknown error occurred";
 
                 setShowError(true);
                 setErrors(prev => ({
