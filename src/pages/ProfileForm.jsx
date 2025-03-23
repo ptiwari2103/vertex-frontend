@@ -4,7 +4,7 @@ import axios from 'axios';
 import { AuthContext } from '../contexts/authContext';
 
 const ProfileForm = () => {
-    const { auth } = useContext(AuthContext);
+    const { userdata } = useContext(AuthContext);
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         email: '',
@@ -77,11 +77,11 @@ const ProfileForm = () => {
             const response = await axios.post('http://localhost:5001/users/profile',
                 {
                     ...formData,
-                    user_id: auth.user_id
+                    user_id: userdata?.user_id
                 },
                 {
                     headers: {
-                        Authorization: `Bearer ${auth.token}`
+                        Authorization: `Bearer ${userdata.user_id}`
                     }
                 }
             );
@@ -110,6 +110,17 @@ const ProfileForm = () => {
                 <form onSubmit={handleSubmit} className="space-y-4">
                     {/* Basic Details */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                            <input
+                                type="text"
+                                name="name"
+                                value={userdata?.name}  
+                                readOnly                              
+                                className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />                           
+                        </div>
+
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
                             <input

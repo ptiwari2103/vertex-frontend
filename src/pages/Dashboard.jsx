@@ -10,7 +10,7 @@ function Dashboard() {
             {/* Show this message only if kyc_status is not true (i.e., 0 or false) */}
             {console.log("===="+userdata?.profile?.kyc_status)}
 
-            {userdata?.profile?.kyc_status !=="Submitted" && (
+            {userdata?.profile?.kyc_status ==="Pending" && (
                 <div className="text-center">
                     <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-6 rounded-lg shadow-lg max-w-lg mb-4">
                         <p className="font-bold text-xl mb-2">KYC Status: Pending</p>

@@ -5,7 +5,7 @@ import { AuthContext } from '../contexts/authContext';
 
 const KycForm = () => {
     const { userdata, updateuserdata } = useContext(AuthContext);
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
     const [formData, setFormData] = useState({
         pan_number: '',
         aadhar_number: ''
@@ -22,15 +22,40 @@ const KycForm = () => {
         aadhar_number_image_front: null,
         aadhar_number_image_back: null
     });
-
+    const [loading, setLoading] = useState(false);
+    const [errors, setErrors] = useState({});
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [successMessages, setSuccessMessages] = useState({serverresponse: ""});
+    const [kycStatus, setKycStatus] = useState(null);
+    const [kycEdit, setKycEdit] = useState(false); // Initialize as false by default
+    
     useEffect(() => {
+        if (!userdata) return;
         console.log("Update KycForm in useEffect");
         const pan_number = userdata.profile.pan_number;
         const aadhar_number = userdata.profile.aadhar_number;
-        const pan_number_image = userdata.profile.pan_number_image;
-        const aadhar_number_image_front = userdata.profile.aadhar_number_image_front;
-        const aadhar_number_image_back = userdata.profile.aadhar_number_image_back;
+        const pan_number_image = "http://localhost:5001/"+userdata.profile.pan_number_image;
+        const aadhar_number_image_front = "http://localhost:5001/"+userdata.profile.aadhar_number_image_front;
+        const aadhar_number_image_back = "http://localhost:5001/"+userdata.profile.aadhar_number_image_back;
         
+        // Set kycEdit based on kyc_status
+        if(userdata.profile.kyc_status === "Approved") {
+            setKycEdit(false);
+            console.log("kyc edit set to false");
+        } else {
+            setKycEdit(true);
+            console.log("kyc edit set to true");
+        }
+        
+        const kycMessages = {
+            Pending: "Your KYC is pending.",
+            Submitted: "Your KYC is pending for approval.",
+            // Approved: "Your KYC is approved.",
+            Rejected: "Your KYC is rejected."
+        };
+        
+        setKycStatus(kycMessages[userdata.profile.kyc_status] || null);
+
         setFormData(prev => ({
             ...prev,
             pan_number,
@@ -50,31 +75,22 @@ const KycForm = () => {
         }));
     }, [userdata]);
 
-    const [loading, setLoading] = useState(false);
-    const [errors, setErrors] = useState({});
-    const [showSuccess, setShowSuccess] = useState(false);
-    const [successMessages, setSuccessMessages] = useState({serverresponse: ""});
-
     const validateForm = () => {
-        const newErrors = {};
-        
+        const newErrors = {};        
         // PAN validation
         if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(formData.pan_number)) {
             newErrors.pan_number = 'Invalid PAN number format';
         }
-
         // Aadhar validation
         if (!/^[0-9]{12}$/.test(formData.aadhar_number)) {
             newErrors.aadhar_number = 'Invalid Aadhar number format';
         }
-
         // Document size validation
         Object.entries(documents).forEach(([key, file]) => {
             if (file && file.size > 5 * 1024 * 1024) {
                 newErrors[key] = 'File size should be less than 5MB';
             }
         });
-
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -168,6 +184,18 @@ const KycForm = () => {
         <div className="container mx-auto px-2 mt-2">
             <div className="bg-white p-4 rounded-lg shadow-md">
                 <h2 className="text-xl font-bold text-center text-gray-800 mb-4">KYC Details</h2>
+
+                {kycStatus && (
+                    <div className="mb-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
+                        {kycStatus}
+                    </div>
+                )}
+                
+                {kycEdit===false && (
+                    <div className="mb-4 p-2 bg-green-100 border border-green-400 text-green-700 rounded text-sm">
+                        Your KYC have been approved.
+                    </div>
+                )}
 
                 {errors.submit && (
                     <div className="mb-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
@@ -275,7 +303,8 @@ const KycForm = () => {
                             )}
                         </div>
                     </div>
-
+                    
+                    {kycEdit===true && (
                     <div className="flex justify-start">
                         <button
                             type="submit"
@@ -287,6 +316,7 @@ const KycForm = () => {
                             {loading ? 'Submitting...' : 'Submit KYC Details'}
                         </button>
                     </div>
+                    )}
                 </form>
             </div>
         </div>
