@@ -1,11 +1,8 @@
 import { useState, useContext, useEffect } from 'react';
-// import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { AuthContext } from '../contexts/authContext';
 
-const ProfileForm = () => {
+const ProfileDetailViewForm = () => {
     const { userdata, updateuserdata } = useContext(AuthContext);
-    // const navigate = useNavigate();
     const [formData, setFormData] = useState({
         email_id: '',
         nominee_name: '',
@@ -26,13 +23,6 @@ const ProfileForm = () => {
         profile_image: null,
         divyang_certificate: null
     });
-
-    const [loading, setLoading] = useState(false);
-    const [errors, setErrors] = useState({});
-    const [showSuccess, setShowSuccess] = useState(false);
-    const [successMessages, setSuccessMessages] = useState({serverresponse: ""});
-    const [profileStatus, setProfileStatus] = useState(null);
-    const [profileEdit, setProfileEdit] = useState(false); // Initialize as false by default
 
     const nomineeRelations = ['Father', 'Mother', 'Brother', 'Sister', 'Wife', 'Husband', 'Son', 'Daughter'];
 
@@ -80,196 +70,14 @@ const ProfileForm = () => {
             }));
         }
 
-        // Set profileEdit based on profile_status
-        if(userdata.status === "Approved") {
-            setProfileEdit(false);
-            console.log("profile edit set to false");
-        } else {
-            setProfileEdit(true);
-            console.log("profile edit set to true");
-        }        
-        const profileMessages = {
-            Pending: "Your Profile is pending.",
-            Active: "Your Profile is pending.", 
-            Inactive: "Your Profile is pending.", 
-            Blocked: "Your Profile is pending.",  
-            Deleted: "Your Profile is pending.",
-            // Approved: "Your profile have been approved.",            
-        };        
-        setProfileStatus(profileMessages[userdata.status] || null);
-
     }, [userdata]);
-
-    const validateForm = () => {
-        const newErrors = {};
-        
-        // Required fields validation
-        if (!formData.nominee_name?.trim()) {
-            newErrors.nominee_name = 'Nominee name is required';
-        }
-
-        if (!formData.nominee_relation) {
-            newErrors.nominee_relation = 'Nominee relation is required';
-        }
-
-        if (!formData.guardian_relation) {
-            newErrors.guardian_relation = 'Guardian relation is required';
-        }
-
-        if (!documents.profile_image) {
-            newErrors.profile_image = 'Profile image is required';
-        }
-
-        // Divyang certificate validation
-        if (formData.is_divyang && !documents.divyang_certificate) {
-            newErrors.divyang_certificate = 'Divyang certificate is required when marked as Divyang';
-        }
-
-        // Optional field validations
-        if (formData.email_id && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email_id)) {
-            newErrors.email_id = 'Invalid email id format';
-        }
-
-        if (formData.nominee_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.nominee_email)) {
-            newErrors.nominee_email = 'Invalid nominee email format';
-        }
-
-        if (formData.nominee_contact && !/^[0-9]{10}$/.test(formData.nominee_contact)) {
-            newErrors.nominee_contact = 'Invalid contact number (10 digits)';
-        }
-
-        // Document size validation
-        Object.entries(documents).forEach(([key, file]) => {
-            if (file && file instanceof File && file.size > 5 * 1024 * 1024) {
-                newErrors[key] = 'File size should be less than 5MB';
-            }
-        });
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        const newValue = type === 'checkbox' ? checked : value;
-
-        setFormData(prev => ({
-            ...prev,
-            [name]: newValue
-        }));
-    };
-
-    const handleFileChange = (e) => {
-        const { name, files } = e.target;
-        if (files && files[0]) {
-            const file = files[0];
-            
-            if (file.size > 5 * 1024 * 1024) {
-                setErrors(prev => ({
-                    ...prev,
-                    [name]: 'File size should be less than 5MB'
-                }));
-                return;
-            }
-
-            setDocuments(prev => ({
-                ...prev,
-                [name]: file
-            }));
-
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setDocumentPreviews(prev => ({
-                    ...prev,
-                    [name]: reader.result
-                }));
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        
-        if (!validateForm()) {
-            return;
-        }
-
-        setLoading(true);
-        const formDataToSend = new FormData();
-        formDataToSend.append('user_id', userdata.user_id);
-        
-        // Append form fields
-        Object.keys(formData).forEach(key => {
-            formDataToSend.append(key, formData[key]);
-        });
-        
-        // Append files
-        Object.entries(documents).forEach(([key, file]) => {
-            if (file && file instanceof File) {
-                formDataToSend.append(key, file);
-            }
-        });
-
-        try {
-            const response = await axios.post(
-                'http://localhost:5001/members/profile',
-                formDataToSend,
-                {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`,
-                        'Content-Type': 'multipart/form-data'
-                    }
-                }
-            );
-
-            if (response.data.success) {
-                updateuserdata(response.data.data);
-                setShowSuccess(true);
-                setSuccessMessages(prev => ({
-                    ...prev,
-                    serverresponse: response.data.message
-                }));
-            }
-        } catch (error) {
-            setErrors({ submit: error.response?.data?.message || 'Failed to update profile' });
-        } finally {
-            setLoading(false);
-        }
-    };
 
     return (
         <div className="container mx-auto px-2 mt-2">
             <div className="bg-white p-4 rounded-lg shadow-md">
                 <h2 className="text-xl font-bold text-center text-gray-800 mb-4">Profile Details</h2>
 
-                {profileStatus && (
-                    <div className="mb-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
-                        {profileStatus}
-                    </div>
-                )}
-                
-                {profileEdit===false && (
-                    <div className="mb-4 p-2 bg-green-100 border border-green-400 text-green-700 rounded text-sm">
-                        Your Profile have been approved.
-                    </div>
-                )}
-
-                {errors.submit && (
-                    <div className="mb-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
-                        {errors.submit}
-                    </div>
-                )}
-
-                {showSuccess && (
-                    <div className="mb-4 p-2 bg-green-100 border border-green-400 text-green-700 rounded text-sm">
-                        {Object.keys(successMessages).map((key) => (
-                            successMessages[key] && <li key={key}>{successMessages[key]}</li>
-                        ))}
-                    </div>
-                )}
-
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         {/* Read-only fields */}
                         <div>
@@ -362,18 +170,15 @@ const ProfileForm = () => {
                             <select
                                 name="guardian_relation"
                                 value={formData.guardian_relation}
-                                onChange={handleChange}
-                                required
-                                className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                readOnly
+                                disabled
+                                className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-100"
                             >
                                 <option value="">Select Relation</option>
                                 {nomineeRelations.map(relation => (
                                     <option key={relation} value={relation}>{relation}</option>
                                 ))}
                             </select>
-                            {errors.guardian_relation && (
-                                <p className="text-red-500 text-xs mt-1">{errors.guardian_relation}</p>
-                            )}
                         </div>
 
                         <div>
@@ -381,16 +186,13 @@ const ProfileForm = () => {
                             <input
                                 type="file"
                                 name="profile_image"
-                                onChange={handleFileChange}
+                                readOnly
+                                disabled
                                 accept="image/*"
-                                required={!documents.profile_image}
-                                className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-100"
                             />
                             {documentPreviews.profile_image && (
                                 <img src={documentPreviews.profile_image} alt="Profile Preview" className="mt-2 h-20 w-20 object-cover rounded-md" />
-                            )}
-                            {errors.profile_image && (
-                                <p className="text-red-500 text-xs mt-1">{errors.profile_image}</p>
                             )}
                         </div>
 
@@ -399,14 +201,11 @@ const ProfileForm = () => {
                             <input
                                 type="text"
                                 name="nominee_name"
-                                value={formData.nominee_name}
-                                onChange={handleChange}
-                                required
-                                className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value={userdata?.nominee_name || ''}
+                                readOnly
+                                disabled
+                                className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-100"
                             />
-                            {errors.nominee_name && (
-                                <p className="text-red-500 text-xs mt-1">{errors.nominee_name}</p>
-                            )}
                         </div>
 
                         <div>
@@ -414,18 +213,15 @@ const ProfileForm = () => {
                             <select
                                 name="nominee_relation"
                                 value={formData.nominee_relation}
-                                onChange={handleChange}
-                                required
-                                className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                readOnly
+                                disabled
+                                className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-100"
                             >
                                 <option value="">Select Relation</option>
                                 {nomineeRelations.map(relation => (
                                     <option key={relation} value={relation}>{relation}</option>
                                 ))}
                             </select>
-                            {errors.nominee_relation && (
-                                <p className="text-red-500 text-xs mt-1">{errors.nominee_relation}</p>
-                            )}
                         </div>
 
                         {/* Optional fields */}
@@ -434,13 +230,11 @@ const ProfileForm = () => {
                             <input
                                 type="email"
                                 name="email_id"
-                                value={formData.email_id}
-                                onChange={handleChange}
-                                className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value={userdata?.email_id || ''}
+                                readOnly
+                                disabled
+                                className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-100"
                             />
-                            {errors.email_id && (
-                                <p className="text-red-500 text-xs mt-1">{errors.email_id}</p>
-                            )}
                         </div>
 
                         <div>
@@ -448,13 +242,11 @@ const ProfileForm = () => {
                             <input
                                 type="text"
                                 name="nominee_contact"
-                                value={formData.nominee_contact}
-                                onChange={handleChange}
-                                className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value={userdata?.nominee_contact || ''}
+                                readOnly
+                                disabled
+                                className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-100"
                             />
-                            {errors.nominee_contact && (
-                                <p className="text-red-500 text-xs mt-1">{errors.nominee_contact}</p>
-                            )}
                         </div>
 
                         <div>
@@ -462,13 +254,11 @@ const ProfileForm = () => {
                             <input
                                 type="email"
                                 name="nominee_email"
-                                value={formData.nominee_email}
-                                onChange={handleChange}
-                                className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value={userdata?.nominee_email || ''}
+                                readOnly
+                                disabled
+                                className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-100"
                             />
-                            {errors.nominee_email && (
-                                <p className="text-red-500 text-xs mt-1">{errors.nominee_email}</p>
-                            )}
                         </div>
                     </div>
 
@@ -478,29 +268,25 @@ const ProfileForm = () => {
                             <input
                                 type="checkbox"
                                 name="is_divyang"
-                                checked={formData.is_divyang}
-                                onChange={handleChange}
+                                checked={userdata?.is_divyang || false}
+                                readOnly
+                                disabled
                                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                             />
                             <label className="ml-2 block text-sm text-gray-900">Are you Divyang?</label>
                         </div>
 
-                        {formData.is_divyang && (
+                        {userdata?.is_divyang && (
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Divyang Certificate*</label>
                                 <input
                                     type="file"
                                     name="divyang_certificate"
-                                    onChange={handleFileChange}
                                     accept="image/*,.pdf"
-                                    required={!documents.divyang_certificate}
-                                    className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-100"
                                 />
                                 {documentPreviews.divyang_certificate && (
                                     <img src={documentPreviews.divyang_certificate} alt="Divyang Certificate Preview" className="mt-2 h-20 w-20 object-cover rounded-md" />
-                                )}
-                                {errors.divyang_certificate && (
-                                    <p className="text-red-500 text-xs mt-1">{errors.divyang_certificate}</p>
                                 )}
                             </div>
                         )}
@@ -509,29 +295,19 @@ const ProfileForm = () => {
                             <input
                                 type="checkbox"
                                 name="is_senior_citizen"
-                                checked={formData.is_senior_citizen}
-                                onChange={handleChange}
+                                checked={userdata?.is_senior_citizen || false}
+                                readOnly
+                                disabled
                                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                             />
                             <label className="ml-2 block text-sm text-gray-900">Are you a Senior Citizen?</label>
                         </div>
                     </div>
                     
-                    {profileEdit===true && (
-                    <div className="flex justify-end">
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        >
-                            {loading ? 'Updating...' : 'Update Profile'}
-                        </button>
-                    </div>
-                    )}
                 </form>
             </div>
         </div>
     );
 };
 
-export default ProfileForm;
+export default ProfileDetailViewForm;

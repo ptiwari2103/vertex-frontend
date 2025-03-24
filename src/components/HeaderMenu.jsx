@@ -1,19 +1,21 @@
-import { NavLink, useNavigate } from "react-router-dom";
-import { useState, useContext } from "react";
-import { AuthContext } from "../contexts/authContext";
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useContext, useState } from 'react';
+import { AuthContext } from '../contexts/authContext';
 
 const HeaderMenu = () => {
-    const [isOpen, setIsOpen] = useState(false);
-    const { logout, userdata, isAuthenticated } = useContext(AuthContext);
     const navigate = useNavigate();
+    const { userdata, isAuthenticated, logout } = useContext(AuthContext);
+    const [isOpen, setIsOpen] = useState(false);
 
     const handleLogout = () => {
-        setIsOpen(false);
         logout();
-        navigate('/', { replace: true });
+        navigate('/');
     };
+
     console.log("Auth Context in HeaderMenu:");
     console.log(userdata);
+    
+    const profileImageUrl = userdata?.profile?.profile_image ? `http://localhost:5001/${userdata.profile.profile_image}` : null;
     
     return (
         <nav className="bg-blue-500 p-3 text-white w-full flex justify-between items-center">
@@ -21,40 +23,39 @@ const HeaderMenu = () => {
                 <>
                     <ul className="flex space-x-6">
                         <li><NavLink to="/dashboard" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Dashboard</NavLink></li>
-                        <li><NavLink to="/kycform" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>KYC Form</NavLink></li>
+                        {/* <li><NavLink to="/kycform" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>KYC Form</NavLink></li>
                         <li><NavLink to="/bankform" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Bank Form</NavLink></li>
-                        <li><NavLink to="/profileform" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Profile Form</NavLink></li>
+                        <li><NavLink to="/profileform" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Profile Form</NavLink></li> */}
                         <li><NavLink to="/profileeditform" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Profile Edit Form</NavLink></li>
+                        <li><NavLink to="/profileviewform" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Profile View Form</NavLink></li>
                     </ul>
                     <div className="relative">
                         <button
                             className="flex items-center space-x-2"
                             onClick={() => setIsOpen(!isOpen)}
                         >
-                            <span className="hidden sm:block">{userdata?.name || "N/A"}</span>
+                            {profileImageUrl ? (
+                                <img 
+                                    src={profileImageUrl} 
+                                    alt="Profile" 
+                                    className="w-8 h-8 rounded-full object-cover border-2 border-white"
+                                />
+                            ) : (
+                                <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center border-2 border-white">
+                                    <span className="text-gray-600 text-sm">{userdata?.name?.charAt(0) || "U"}</span>
+                                </div>
+                            )}
+                            <span className="hidden sm:block ml-2">{userdata?.name || "N/A"}</span>
                         </button>
 
                         {isOpen && (
                             <div className="absolute right-0 mt-2 w-40 bg-white text-black rounded shadow-lg">
-                                <ul className="flex flex-col">
-                                    {/* <li>
-                                        <NavLink
-                                            to="/profile"
-                                            className="block px-4 py-2 hover:bg-gray-200"
-                                            onClick={() => setIsOpen(false)}
-                                        >
-                                            Profile
-                                        </NavLink>
-                                    </li> */}
-                                    <li>
-                                        <button
-                                            className="block px-4 py-2 w-full text-left hover:bg-gray-200"
-                                            onClick={handleLogout}
-                                        >
-                                            Logout
-                                        </button>
-                                    </li>
-                                </ul>
+                                <button
+                                    onClick={handleLogout}
+                                    className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                                >
+                                    Logout
+                                </button>
                             </div>
                         )}
                     </div>

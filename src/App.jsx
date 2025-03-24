@@ -14,6 +14,7 @@ import KycForm from "./pages/KycForm";
 import BankForm from "./pages/BankForm";
 import ProfileForm from "./pages/ProfileForm";
 import ProfileEditForm from "./pages/ProfileEditForm";
+import ProfileViewForm from "./pages/ProfileViewForm";
 
 function App() {
     return (
@@ -54,6 +55,11 @@ function App() {
                         <Route path="profileeditform" element={
                             <ProtectedRoute>
                                 <ProfileEditForm />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="profileviewform" element={
+                            <ProtectedRoute>
+                                <ProfileViewForm />
                             </ProtectedRoute>
                         } />
                         <Route path="*" element={<NotFound />} />

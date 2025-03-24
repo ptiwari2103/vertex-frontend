@@ -305,7 +305,7 @@ const KycForm = () => {
                     </div>
                     
                     {kycEdit===true && (
-                    <div className="flex justify-start">
+                    <div className="flex justify-end">
                         <button
                             type="submit"
                             disabled={loading}

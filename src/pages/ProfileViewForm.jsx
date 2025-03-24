@@ -1,34 +1,34 @@
-import ProfileForm from './ProfileForm';
-import KycForm from './KycForm';
-import BankForm from './BankForm';
-import AddressForm from './AddressForm';
+import ProfileDetailViewForm from './ProfileDetailViewForm';
+import KycViewForm from './KycViewForm';
+import BankViewForm from './BankViewForm';
+import AddressViewForm from './AddressViewForm';
 
 
-const ProfileEditForm = () => {
+const ProfileViewForm = () => {
 
     return (
         <div className="max-w-7xl mx-auto p-4 space-y-6">
             {/* KYC Section */}
             <div className="border rounded-lg p-6 bg-white shadow-sm">
-                <KycForm />
+                <KycViewForm />
             </div>
             
             {/* Profile Section */}
             <div className="border rounded-lg p-6 bg-white shadow-sm">
-                <ProfileForm />
+                <ProfileDetailViewForm />
             </div>
             
             {/* Address Section */}
             <div className="border rounded-lg p-6 bg-white shadow-sm">
-                <AddressForm />
+                <BankViewForm />
             </div>
 
             {/* Bank Section */}
             <div className="border rounded-lg p-6 bg-white shadow-sm">
-                <BankForm />
+                <AddressViewForm />
             </div>
         </div>
     );
 };
 
-export default ProfileEditForm;
+export default ProfileViewForm;
