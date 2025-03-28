@@ -15,6 +15,7 @@ import BankForm from "./pages/BankForm";
 import ProfileForm from "./pages/ProfileForm";
 import ProfileEditForm from "./pages/ProfileEditForm";
 import ProfileViewForm from "./pages/ProfileViewForm";
+import PinManagement from "./pages/PinManagement";
 
 function App() {
     return (
@@ -60,6 +61,11 @@ function App() {
                         <Route path="profileviewform" element={
                             <ProtectedRoute>
                                 <ProfileViewForm />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="pinmanagement" element={
+                            <ProtectedRoute>
+                                <PinManagement />
                             </ProtectedRoute>
                         } />
                         <Route path="*" element={<NotFound />} />
