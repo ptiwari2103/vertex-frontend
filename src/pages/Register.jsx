@@ -54,6 +54,40 @@ const Register = () => {
     const [showTermsModal, setShowTermsModal] = useState(false);
     const [showError, setShowError] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [paymentKeyError, setPaymentKeyError] = useState('');
+    const [isPaymentKeyValid, setIsPaymentKeyValid] = useState(false);
+    const [isValidatingKey, setIsValidatingKey] = useState(false);
+
+    // Validate payment key
+    useEffect(() => {
+        const validatePaymentKey = async () => {
+            if (formData.pay_key?.length === 8) {
+                setIsValidatingKey(true);
+                setPaymentKeyError('');
+                try {
+                    const response = await axios.post('http://localhost:5001/auth/validate-payment-key', {
+                        payment_key: formData.pay_key
+                    });
+                    if (response.data.success === true) {
+                        setIsPaymentKeyValid(true);
+                        setPaymentKeyError('');
+                    } else {
+                        setIsPaymentKeyValid(false);
+                        setPaymentKeyError('Your payment key is incorrect');
+                    }
+                } catch (error) {
+                    setIsPaymentKeyValid(false);
+                    setPaymentKeyError('Error validating payment key. Please try again.');
+                }
+                setIsValidatingKey(false);
+            } else {
+                setIsPaymentKeyValid(false);
+                setPaymentKeyError('');
+            }
+        };
+
+        validatePaymentKey();
+    }, [formData.pay_key]);
 
     // Fetch states from master table (Mock API)
     useEffect(() => {
@@ -337,7 +371,12 @@ const Register = () => {
             alert("Password and confirm password must be same");
             return;
         }
-      
+
+        if (!isPaymentKeyValid) {
+            setShowError(true);
+            return;
+        }
+
         try {
             setIsSubmitting(true); // Start loading
             // const dataToSubmit = { ...formData,
@@ -671,9 +710,31 @@ const Register = () => {
                             )}
                         </div>
 
-                        {/* Terms & Conditions and Key side by side */}
+                        {/* Payment Key */}
+                        <div className="col-span-2">
+                            <label className="block text-xl text-gray-700 mb-2">Payment Key <span className="text-red-500">*</span></label>
+                            <input 
+                                type="text" 
+                                name="pay_key" 
+                                maxLength={8}
+                                className={`w-full p-4 text-lg border rounded-lg ${paymentKeyError ? 'border-red-500' : isPaymentKeyValid ? 'border-green-500' : 'border-gray-300'}`}
+                                value={formData.pay_key || ''}
+                                onChange={handleChange}
+                                required
+                            />
+                            {isValidatingKey && (
+                                <p className="text-gray-600 text-sm mt-1">Validating payment key...</p>
+                            )}
+                            {paymentKeyError && (
+                                <p className="text-red-500 text-sm mt-1">{paymentKeyError}</p>
+                            )}
+                            {isPaymentKeyValid && (
+                                <p className="text-green-500 text-sm mt-1">Payment key verified</p>
+                            )}
+                        </div>
+
+                        {/* Terms & Conditions */}
                         <div className="col-span-2 flex justify-between items-start space-x-8 mt-6 bg-gray-50 p-6 rounded-lg">
-                            {/* Terms & Conditions */}
                             <div className="flex-1">
                                 <div className="flex items-center space-x-3">
                                     <input 
@@ -699,22 +760,6 @@ const Register = () => {
                                     </p>
                                 )}
                             </div>
-
-                            {/* Payment Key */}
-                            <div className="flex-1">
-                                <label className="block text-xl text-gray-700 mb-2">Payment Key <span className="text-red-500">*</span></label>
-                                <input 
-                                    type="text" 
-                                    name="pay_key" 
-                                    value={formData.pay_key} 
-                                    required 
-                                    onChange={handleChange}
-                                    maxLength={8}
-                                    className={`w-full p-4 text-lg border rounded-lg ${errors.pay_key ? 'border-red-500' : 'border-gray-300'}`}
-                                    placeholder="Enter your payment key"
-                                />
-                                {errors.pay_key && <p className="text-sm text-red-500 mt-2">{errors.pay_key}</p>}
-                            </div>  
                         </div>
                     </div>
 
@@ -730,12 +775,12 @@ const Register = () => {
                     <div className="flex justify-center mt-10">
                         <button 
                             type="submit" 
+                            disabled={isSubmitting || !isPaymentKeyValid || isValidatingKey}
                             className={`px-16 py-4 text-xl rounded-lg font-semibold transition-colors flex items-center justify-center ${
-                                isUnderAge || isSubmitting
+                                isUnderAge || isSubmitting || !isPaymentKeyValid || isValidatingKey
                                 ? 'bg-gray-400 cursor-not-allowed' 
                                 : 'bg-blue-600 text-white hover:bg-blue-700'
                             }`}
-                            disabled={isUnderAge || isSubmitting}
                         >
                             {isSubmitting ? (
                                 <>
