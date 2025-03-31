@@ -140,8 +140,8 @@ const ProfileForm = () => {
 
         // Document size validation
         Object.entries(documents).forEach(([key, file]) => {
-            if (file && file instanceof File && file.size > 5 * 1024 * 1024) {
-                newErrors[key] = 'File size should be less than 5MB';
+            if (file && file instanceof File && file.size > 10 * 1024 * 1024) {
+                newErrors[key] = 'File size should be less than 10MB';
             }
         });
 
@@ -164,10 +164,10 @@ const ProfileForm = () => {
         if (files && files[0]) {
             const file = files[0];
             
-            if (file.size > 5 * 1024 * 1024) {
+            if (file.size > 10 * 1024 * 1024) {
                 setErrors(prev => ({
                     ...prev,
-                    [name]: 'File size should be less than 5MB'
+                    [name]: 'File size should be less than 10MB'
                 }));
                 return;
             }
@@ -232,7 +232,8 @@ const ProfileForm = () => {
                 }));
             }
         } catch (error) {
-            setErrors({ submit: error.response?.data?.message || 'Failed to update profile' });
+            // setErrors({ submit: error.response?.data?.message || 'Failed to update profile' });
+            setErrors({ submit: error.response?.data?.error || error.response?.data?.message || 'Failed to update profile' });
         } finally {
             setLoading(false);
         }

@@ -86,7 +86,7 @@ function Dashboard() {
                                 <p className="text-gray-600 mb-4">Your KYC verification is pending. Please complete your KYC to access all features and ensure compliance with our security measures.</p>
                                 <div className="mt-2">
                                     <Link 
-                                        to="/kycform" 
+                                        to="/profileeditform" 
                                         className="inline-flex items-center bg-yellow-500 text-white px-6 py-2 rounded-md hover:bg-yellow-600 transition-colors duration-200"
                                     >
                                         Complete KYC Now
