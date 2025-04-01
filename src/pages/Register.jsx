@@ -166,21 +166,36 @@ const Register = () => {
     // Handle form input change
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        
-        if (type === "checkbox") {
-            setFormData({
-                ...formData,
-                [name]: checked
-            });
+        // Special handling for name field to capitalize first letter of each word
+        if (name === 'name' || name === 'guardian_name') {
+            const capitalizedValue = value
+                .toLowerCase()
+                .split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
             
-            // Clear terms and conditions error when checkbox is checked
-            if (name === "terms_accepted" && checked) {
-                setErrors(prev => ({
-                    ...prev,
-                    terms_accepted: ""
-                }));
-            }
-            return;
+            setFormData(prev => ({
+                ...prev,
+                [name]: capitalizedValue
+            }));
+        } else if (type === "checkbox") {
+            setFormData(prev => ({
+                ...prev,
+                [name]: checked
+            }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: value
+            }));
+        }
+
+        // Clear error when user starts typing
+        if (errors[name]) {
+            setErrors(prev => ({
+                ...prev,
+                [name]: ''
+            }));
         }
 
         // For date of birth field
@@ -247,15 +262,6 @@ const Register = () => {
                 ...prev,
                 [name]: error
             }));
-
-            // Only update if there's no error or if clearing the field
-            if (!error || value === "") {
-                setFormData({
-                    ...formData,
-                    [name]: value
-                });
-            }
-            return;
         }
 
         // For mobile number validation
@@ -268,12 +274,6 @@ const Register = () => {
                 ...prev,
                 mobile_number: error
             }));
-
-            setFormData({
-                ...formData,
-                mobile_number: value
-            });
-            return;
         }
 
         // For state and district selection
@@ -283,12 +283,6 @@ const Register = () => {
                 [name]: ""
             }));
         }
-
-        // For other fields
-        setFormData({
-            ...formData,
-            [name]: value
-        });
     };
 
 

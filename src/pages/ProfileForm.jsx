@@ -14,7 +14,8 @@ const ProfileForm = () => {
         nominee_email: '',
         is_divyang: false,
         is_senior_citizen: false,
-        guardian_relation: ''
+        guardian_relation: '',
+        divyang_type: ''
     });
 
     const [documents, setDocuments] = useState({
@@ -55,6 +56,7 @@ const ProfileForm = () => {
             guardian_relation: userdata.guardian_relation || '',
             date_of_birth: userdata.date_of_birth || '',
             gender: userdata.gender || '',            
+            divyang_type: profile.divyang_type || ''
 
         }));
 
@@ -110,6 +112,10 @@ const ProfileForm = () => {
 
         if (!formData.nominee_relation) {
             newErrors.nominee_relation = 'Nominee relation is required';
+        }
+
+        if (!formData.nominee_contact) {
+            newErrors.nominee_contact = 'Nominee contact is required';
         }
 
         if (!formData.guardian_relation) {
@@ -427,12 +433,13 @@ const ProfileForm = () => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Nominee Contact</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Nominee Contact*</label>
                             <input
                                 type="text"
                                 name="nominee_contact"
                                 value={formData.nominee_contact}
                                 onChange={handleChange}
+                                required
                                 className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                             {errors.nominee_contact && (
@@ -487,6 +494,26 @@ const ProfileForm = () => {
                         </div>
 
                         {formData.is_divyang && (
+                            <>
+                            <div>                                
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Divyang Type*</label>
+                                <select 
+                                    name="divyang_type" 
+                                    className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    value={formData.divyang_type || ''}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    <option value="">Select Divyang Type</option>
+                                    <option value="Blindness">Blindness</option>
+                                    <option value="Low-vision">Low-vision</option>
+                                    <option value="Hearing Impairment">Hearing Impairment</option>
+                                    <option value="Locomotor Disability">Locomotor Disability</option>
+                                    <option value="Mental Illness">Mental Illness</option>
+                                    <option value="Multiple Disabilities">Multiple Disabilities</option>
+                                </select>                                
+                            </div>
+                            
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Divyang Certificate*</label>
                                 <input
@@ -504,7 +531,10 @@ const ProfileForm = () => {
                                     <p className="text-red-500 text-xs mt-1">{errors.divyang_certificate}</p>
                                 )}
                             </div>
+                            </>
                         )}
+
+                        
 
                         <div className="flex items-center">
                             <input

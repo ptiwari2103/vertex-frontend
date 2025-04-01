@@ -87,8 +87,8 @@ const KycForm = () => {
         }
         // Document size validation
         Object.entries(documents).forEach(([key, file]) => {
-            if (file && file.size > 5 * 1024 * 1024) {
-                newErrors[key] = 'File size should be less than 5MB';
+            if (file && file.size >   10 * 1024 * 1024) {
+                newErrors[key] = 'File size should be less than 10MB';
             }
         });
         setErrors(newErrors);
@@ -108,10 +108,10 @@ const KycForm = () => {
         if (files && files[0]) {
             const file = files[0];
             
-            if (file.size > 5 * 1024 * 1024) {
+            if (file.size > 10 * 1024 * 1024) {
                 setErrors(prev => ({
                     ...prev,
-                    [name]: 'File size should be less than 5MB'
+                    [name]: 'File size should be less than 10MB'
                 }));
                 return;
             }
@@ -258,7 +258,7 @@ const KycForm = () => {
                                 accept="image/*"
                                 className="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                             />
-                            {documentPreviews.pan_number_image && (
+                            {documentPreviews.pan_number_image && documentPreviews.pan_number_image !== 'http://localhost:5001/null' && (
                                 <img src={documentPreviews.pan_number_image} alt="PAN Card Preview" className="mt-2 h-20 object-contain" />
                             )}
                             {errors.pan_number_image && (
@@ -275,7 +275,7 @@ const KycForm = () => {
                                 accept="image/*"
                                 className="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                             />
-                            {documentPreviews.aadhar_number_image_front && (
+                            {documentPreviews.aadhar_number_image_front && documentPreviews.aadhar_number_image_front !== 'http://localhost:5001/null' && (
                                 <img src={documentPreviews.aadhar_number_image_front} alt="Aadhar Front Preview" className="mt-2 h-20 object-contain" />
                             )}
                             {errors.aadhar_number_image_front && (
@@ -292,7 +292,7 @@ const KycForm = () => {
                                 accept="image/*"
                                 className="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                             />
-                            {documentPreviews.aadhar_number_image_back && (
+                            {documentPreviews.aadhar_number_image_back && documentPreviews.aadhar_number_image_back !== 'http://localhost:5001/null' && (
                                 <img src={documentPreviews.aadhar_number_image_back} alt="Aadhar Back Preview" className="mt-2 h-20 object-contain" />
                             )}
                             {errors.aadhar_number_image_back && (
