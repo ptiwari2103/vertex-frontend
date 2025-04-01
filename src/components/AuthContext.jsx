@@ -5,8 +5,13 @@ import { AuthContext } from "../contexts/authContext";
 // Auth Provider Component
 export const AuthProvider = ({ children }) => {
     const [userdata, setUserdata] = useState(() => {
-        const savedData = localStorage.getItem("userdata");
-        return savedData ? JSON.parse(savedData) : {};
+        try {
+            const savedData = localStorage.getItem("userdata");
+            return savedData && savedData !== "undefined" ? JSON.parse(savedData) : {};
+        } catch (error) {
+            console.error("Error parsing userdata from localStorage:", error);
+            return {};
+        }
     });
     const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("token"));
 

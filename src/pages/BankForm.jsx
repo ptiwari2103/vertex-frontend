@@ -4,6 +4,7 @@ import { AuthContext } from '../contexts/authContext';
 
 const BankForm = () => {
     const { userdata, updateuserdata } = useContext(AuthContext);
+    console.log("BankForm userdata:", userdata);
 
     const [formData, setFormData] = useState({
         account_holder: '',
@@ -11,16 +12,15 @@ const BankForm = () => {
         confirm_account_number: '',
         ifsc_code: '',
         bank_name: '',
-        branch_name: ''
+        branch_name: '',
+        account_type: ''
     });
 
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
     const [showSuccess, setShowSuccess] = useState(false);
     const [successMessages, setSuccessMessages] = useState({ serverresponse: "" });
-    // const [profileStatus, setProfileStatus] = useState(null);
-    // const [profileEdit, setProfileEdit] = useState(false); // Initialize as false by default
-
+    
     const validateForm = () => {
         const newErrors = {};
 
@@ -52,32 +52,13 @@ const BankForm = () => {
         const { userBank } = userdata;
         setFormData(prev => ({
             ...prev,
-            account_holder: userBank?.latestBank?.account_holder || userBank?.activeBank?.account_holder || '',
+            account_holder: userBank?.latestBank?.account_holder || userBank?.activeBank?.account_holder || userdata.name|| '',
             account_number: userBank?.latestBank?.account_number || userBank?.activeBank?.account_number || '',
             bank_name: userBank?.latestBank?.bank_name || userBank?.activeBank?.bank_name || '',
             branch_name: userBank?.latestBank?.branch_name || userBank?.activeBank?.branch_name || '',
             ifsc_number: userBank?.latestBank?.ifsc_number || userBank?.activeBank?.ifsc_number || '',
+            account_type: userBank?.latestBank?.account_type || userBank?.activeBank?.account_type || ''
         }));
-
-
-        // Set profileEdit based on profile_status
-        // if (userdata.status === "Approved") {
-        //     setProfileEdit(false);
-        //     console.log("profile edit set to false");
-        // } else {
-        //     setProfileEdit(true);
-        //     console.log("profile edit set to true");
-        // }
-        // const profileMessages = {
-        //     Pending: "Your Profile is pending.",
-        //     Active: "Your Profile is pending.",
-        //     Inactive: "Your Profile is pending.",
-        //     Blocked: "Your Profile is pending.",
-        //     Deleted: "Your Profile is pending.",
-        //     // Approved: "Your profile have been approved.",            
-        // };
-        // setProfileStatus(profileMessages[userdata.status] || null);
-
 
     }, [userdata]);
 
@@ -152,6 +133,7 @@ const BankForm = () => {
                                 value={formData.account_holder}
                                 onChange={handleChange}
                                 required
+                                readOnly
                                 className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                         </div>
@@ -171,7 +153,6 @@ const BankForm = () => {
                                 className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                         </div>
-
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -203,7 +184,7 @@ const BankForm = () => {
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                IFSC Code
+                                IFSC Number*
                             </label>
                             <input
                                 type="text"
@@ -216,20 +197,35 @@ const BankForm = () => {
                                 className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                         </div>
-                    </div>
 
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Account Type*</label>
+                            <select
+                                name="account_type"
+                                value={formData.account_type}
+                                onChange={handleChange}
+                                required
+                                className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value="">Select Account Type</option>
+                                <option value="Savings">Savings</option>
+                                <option value="Current">Current</option>
+                                <option value="Salary">Salary</option>
+                            </select>
+                        </div>
+                    </div>
                     <div className="flex justify-end">
                         <button
                             type="submit"
-                            className="bg-blue-600 text-white px-4 py-1 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                            disabled={loading}
+                            className={`bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
-                            Submit Bank Details
-                        </button>
+                            {loading ? 'Submitting...' : 'Submit Bank Details'}
+                            </button>
                     </div>
                 </form>
             </div>
         </div>
-
     );
 };
 

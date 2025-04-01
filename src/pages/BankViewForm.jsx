@@ -9,7 +9,8 @@ const BankViewForm = () => {
         account_number: '',
         ifsc_number: '',
         bank_name: '',
-        branch_name: ''
+        branch_name: '',
+        account_type: '',
     });
 
     useEffect(() => {
@@ -23,6 +24,7 @@ const BankViewForm = () => {
             bank_name: userBank?.activeBank?.bank_name || '',
             branch_name: userBank?.activeBank?.branch_name || '',
             ifsc_number: userBank?.activeBank?.ifsc_number || '',
+            account_type: userBank?.activeBank?.account_type || '',
         }));
 
     }, [userdata]);
@@ -101,6 +103,20 @@ const BankViewForm = () => {
                                 type="text"
                                 name="ifsc_number"
                                 value={formData.ifsc_number}
+                                readOnly
+                                disabled
+                                className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Account Type
+                            </label>
+                            <input
+                                type="text"
+                                name="account_type"
+                                value={formData.account_type}
                                 readOnly
                                 disabled
                                 className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"

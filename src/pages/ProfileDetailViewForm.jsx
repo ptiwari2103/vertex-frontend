@@ -2,22 +2,7 @@ import { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../contexts/authContext';
 
 const ProfileDetailViewForm = () => {
-    const { userdata, updateuserdata } = useContext(AuthContext);
-    const [formData, setFormData] = useState({
-        email_id: '',
-        nominee_name: '',
-        nominee_relation: '',
-        nominee_contact: '',
-        nominee_email: '',
-        is_divyang: false,
-        is_senior_citizen: false,
-        guardian_relation: ''
-    });
-
-    const [documents, setDocuments] = useState({
-        profile_image: null,
-        divyang_certificate: null
-    });
+    const { userdata } = useContext(AuthContext);
 
     const [documentPreviews, setDocumentPreviews] = useState({
         profile_image: null,
@@ -33,26 +18,7 @@ const ProfileDetailViewForm = () => {
         const profile_image = profile.profile_image ? "http://localhost:5001/"+profile.profile_image : null;
         const divyang_certificate = profile.divyang_certificate ? "http://localhost:5001/"+profile.divyang_certificate : null;
 
-        setFormData(prev => ({
-            ...prev,
-            email_id: userdata.email_id || '',
-            nominee_name: profile.nominee_name || '',
-            nominee_relation: profile.nominee_relation || '',
-            nominee_contact: profile.nominee_contact || '',
-            nominee_email: profile.nominee_email || '',
-            is_divyang: profile.is_divyang || false,
-            is_senior_citizen: profile.is_senior_citizen || false,
-            guardian_relation: userdata.guardian_relation || '',
-            date_of_birth: userdata.date_of_birth || '',
-            gender: userdata.gender || '',            
-
-        }));
-
         if (profile_image) {
-            setDocuments(prev => ({
-                ...prev,
-                profile_image
-            }));
             setDocumentPreviews(prev => ({
                 ...prev,
                 profile_image
@@ -60,10 +26,6 @@ const ProfileDetailViewForm = () => {
         }
 
         if (divyang_certificate) {
-            setDocuments(prev => ({
-                ...prev,
-                divyang_certificate
-            }));
             setDocumentPreviews(prev => ({
                 ...prev,
                 divyang_certificate
@@ -169,7 +131,7 @@ const ProfileDetailViewForm = () => {
                             <label className="block text-sm font-medium text-gray-700 mb-1">Guardian Relation*</label>
                             <select
                                 name="guardian_relation"
-                                value={formData.guardian_relation}
+                                value={userdata?.guardian_relation || ''}
                                 readOnly
                                 disabled
                                 className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-100"
@@ -201,7 +163,7 @@ const ProfileDetailViewForm = () => {
                             <input
                                 type="text"
                                 name="nominee_name"
-                                value={userdata?.nominee_name || ''}
+                                value={userdata?.profile?.nominee_name || ''}
                                 readOnly
                                 disabled
                                 className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-100"
@@ -212,7 +174,7 @@ const ProfileDetailViewForm = () => {
                             <label className="block text-sm font-medium text-gray-700 mb-1">Nominee Relation*</label>
                             <select
                                 name="nominee_relation"
-                                value={formData.nominee_relation}
+                                value={userdata?.profile?.nominee_relation || ''}
                                 readOnly
                                 disabled
                                 className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-100"
@@ -242,7 +204,7 @@ const ProfileDetailViewForm = () => {
                             <input
                                 type="text"
                                 name="nominee_contact"
-                                value={userdata?.nominee_contact || ''}
+                                value={userdata?.profile?.nominee_contact || ''}
                                 readOnly
                                 disabled
                                 className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-100"
@@ -254,7 +216,7 @@ const ProfileDetailViewForm = () => {
                             <input
                                 type="email"
                                 name="nominee_email"
-                                value={userdata?.nominee_email || ''}
+                                value={userdata?.profile?.nominee_email || ''}
                                 readOnly
                                 disabled
                                 className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-100"
@@ -268,7 +230,7 @@ const ProfileDetailViewForm = () => {
                             <input
                                 type="checkbox"
                                 name="is_divyang"
-                                checked={userdata?.is_divyang || false}
+                                checked={userdata?.profile?.is_divyang || false}
                                 readOnly
                                 disabled
                                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
@@ -276,7 +238,28 @@ const ProfileDetailViewForm = () => {
                             <label className="ml-2 block text-sm text-gray-900">Are you Divyang?</label>
                         </div>
 
-                        {userdata?.is_divyang && (
+                        {userdata?.profile?.is_divyang && (
+                            <>
+                            <div>                                
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Divyang Type*</label>
+                            <select 
+                                name="divyang_type" 
+                                className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value={userdata?.profile?.divyang_type || ''}
+                                readOnly
+                                disabled
+                                required
+                            >
+                                <option value="">Select Divyang Type</option>
+                                <option value="Blindness">Blindness</option>
+                                <option value="Low-vision">Low-vision</option>
+                                <option value="Hearing Impairment">Hearing Impairment</option>
+                                <option value="Locomotor Disability">Locomotor Disability</option>
+                                <option value="Mental Illness">Mental Illness</option>
+                                <option value="Multiple Disabilities">Multiple Disabilities</option>
+                            </select>                                
+                            </div>
+                            
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Divyang Certificate*</label>
                                 <input
@@ -289,6 +272,7 @@ const ProfileDetailViewForm = () => {
                                     <img src={documentPreviews.divyang_certificate} alt="Divyang Certificate Preview" className="mt-2 h-20 w-20 object-cover rounded-md" />
                                 )}
                             </div>
+                            </>
                         )}
 
                         <div className="flex items-center">
