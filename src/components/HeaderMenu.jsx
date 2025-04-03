@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import { AuthContext } from '../contexts/authContext';
 
 const HeaderMenu = () => {
@@ -12,9 +12,15 @@ const HeaderMenu = () => {
         navigate('/');
     };
 
-    console.log("Auth Context in HeaderMenu:");
-    console.log(userdata);
-    
+    console.log("Auth Context in HeaderMenu:", userdata, isAuthenticated);
+
+    useEffect(() => {
+        if(!userdata.id && isAuthenticated) {
+            logout();
+            navigate('/');
+        }
+    }, [userdata, navigate, logout, isAuthenticated]);
+
     const profileImageUrl = userdata?.profile?.profile_image ? `http://localhost:5001/${userdata.profile.profile_image}` : null;
     
     return (
@@ -23,9 +29,6 @@ const HeaderMenu = () => {
                 <>
                     <ul className="flex space-x-6">
                         <li><NavLink to="/dashboard" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Dashboard</NavLink></li>
-                        {/* <li><NavLink to="/kycform" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>KYC Form</NavLink></li>
-                        <li><NavLink to="/bankform" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Bank Form</NavLink></li>
-                        <li><NavLink to="/profileform" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Profile Form</NavLink></li> */}
                         <li><NavLink to="/profileeditform" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Profile Edit Form</NavLink></li>
                         <li><NavLink to="/profileviewform" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Profile View Form</NavLink></li>
                         <li><NavLink to="/pinmanagement" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Pin Management</NavLink></li>

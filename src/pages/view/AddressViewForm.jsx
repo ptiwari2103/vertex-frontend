@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from 'react';
-import { AuthContext } from '../contexts/authContext';
+import { AuthContext } from '../../contexts/authContext';
 
 const AddressViewForm = () => {
     const { userdata } = useContext(AuthContext);

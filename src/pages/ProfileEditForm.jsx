@@ -1,7 +1,7 @@
-import ProfileForm from './ProfileForm';
-import KycForm from './KycForm';
-import BankForm from './BankForm';
-import AddressForm from './AddressForm';
+import ProfileForm from './edit/ProfileForm';
+import KycForm from './edit/KycForm';
+import BankForm from './edit/BankForm';
+import AddressForm from './edit/AddressForm';
 
 
 const ProfileEditForm = () => {

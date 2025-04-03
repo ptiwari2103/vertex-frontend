@@ -1,16 +1,16 @@
 import { useState, useContext, useEffect } from 'react';
 import axios from 'axios';
-import { AuthContext } from '../contexts/authContext';
+import { AuthContext } from '../../contexts/authContext';
+import { useNavigate } from 'react-router-dom';
 
 const BankForm = () => {
-    const { userdata, updateuserdata } = useContext(AuthContext);
-    console.log("BankForm userdata:", userdata);
-
+    const { userdata, updateuserdata, logout } = useContext(AuthContext);
+    const navigate = useNavigate();
+    
     const [formData, setFormData] = useState({
         account_holder: '',
         account_number: '',
-        confirm_account_number: '',
-        ifsc_code: '',
+        ifsc_number: '',
         bank_name: '',
         branch_name: '',
         account_type: ''
@@ -21,6 +21,13 @@ const BankForm = () => {
     const [showSuccess, setShowSuccess] = useState(false);
     const [successMessages, setSuccessMessages] = useState({ serverresponse: "" });
     
+    useEffect(() => {
+        if (errors.serverError === "Invalid token" || errors.serverError === "Token has expired") {
+            logout();
+            navigate('/');
+        }
+    }, [errors.serverError, logout, navigate]);
+
     const validateForm = () => {
         const newErrors = {};
 
@@ -80,12 +87,14 @@ const BankForm = () => {
                 },
                 {
                     headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
                     }
                 }
             );
 
             if (response.data.success) {
+                console.log("Bank updated successfully:", response.data.data);
                 updateuserdata(response.data.data);
                 setShowSuccess(true);
                 setSuccessMessages(prev => ({
@@ -94,7 +103,26 @@ const BankForm = () => {
                 }));
             }
         } catch (error) {
-            setErrors({ submit: error.response?.data?.message || 'Failed to update profile' });
+            if (error.response) {
+                // Handle token errors
+                if (error.response.data.message === "Invalid token" || error.response.data.message === "Token has expired") {
+                    setErrors(prev => ({ ...prev, serverError: error.response.data.message }));
+                }
+                // Handle duplicate entry error (500 status)
+                else if (error.response.data.message === "Duplicate entry error") {
+                    setErrors(prev => ({
+                        ...prev,
+                        account_number: error.response.data.error[0], // "account_no must be unique"
+                        serverError: null // Clear any server error if exists
+                    }));
+                }
+                // Handle other errors
+                else {
+                    setErrors(prev => ({ ...prev, serverError: error.response.data.message }));
+                }
+            } else {
+                setErrors(prev => ({ ...prev, serverError: "An error occurred while submitting the form" }));
+            }
         } finally {
             setLoading(false);
         }

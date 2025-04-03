@@ -1,9 +1,11 @@
 import { useState, useContext, useEffect } from 'react';
 import axios from 'axios';
-import { AuthContext } from '../contexts/authContext';
+import { AuthContext } from '../../contexts/authContext';
+import { useNavigate } from 'react-router-dom';
 
 const AddressForm = () => {
-    const { userdata, updateuserdata } = useContext(AuthContext);
+    const navigate = useNavigate();
+    const { userdata, updateuserdata, logout } = useContext(AuthContext);
     const [formData, setFormData] = useState({
         permanent_address: '',
         permanent_city: '',
@@ -25,6 +27,12 @@ const AddressForm = () => {
     // const [profileStatus, setProfileStatus] = useState(null);
     // const [profileEdit, setProfileEdit] = useState(false); // Initialize as false by default
 
+    useEffect(() => {
+        if (errors.serverError === "Invalid token" || errors.serverError === "Token has expired") {
+            logout();
+            navigate('/');
+        }
+    }, [errors.serverError, logout, navigate]);
 
     const validateForm = () => {
         const newErrors = {};
@@ -126,7 +134,7 @@ const AddressForm = () => {
             );
 
             if (response.data.success) {
-                // navigate('/dashboard');
+                console.log("Address updated successfully:", response.data.data);
                 updateuserdata(response.data.data);
                 setShowSuccess(true);
                 setSuccessMessages(prev => ({
@@ -135,7 +143,16 @@ const AddressForm = () => {
                 }));
             }
         } catch (error) {
-            setErrors({ submit: error.response?.data?.message || 'Failed to update profile' });
+            //setErrors({ submit: error.response?.data?.message || 'Failed to update profile' });
+            if (error.response) {
+                if (error.response.data.message === "Invalid token" || error.response.data.message === "Token has expired") {
+                    setErrors(prev => ({ ...prev, serverError: error.response.data.message }));
+                } else {
+                    setErrors(prev => ({ ...prev, serverError: error.response.data.message }));
+                }
+            } else {
+                setErrors(prev => ({ ...prev, serverError: "An error occurred while submitting the form" }));
+            }
         } finally {
             setLoading(false);
         }

@@ -1,11 +1,11 @@
 import { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { AuthContext } from '../contexts/authContext';
+import { AuthContext } from '../../contexts/authContext';
 
 const KycForm = () => {
-    const { userdata, updateuserdata } = useContext(AuthContext);
-    // const navigate = useNavigate();
+    const navigate = useNavigate();
+    const { userdata, updateuserdata, logout } = useContext(AuthContext);
     const [formData, setFormData] = useState({
         pan_number: '',
         aadhar_number: ''
@@ -75,6 +75,13 @@ const KycForm = () => {
         }));
     }, [userdata]);
 
+    useEffect(() => {
+        if (errors.serverError === "Invalid token" || errors.serverError === "Token has expired") {
+            logout();
+            navigate('/');
+        }
+    }, [errors.serverError, logout, navigate]);
+
     const validateForm = () => {
         const newErrors = {};        
         // PAN validation
@@ -140,30 +147,27 @@ const KycForm = () => {
         }
 
         setLoading(true);
-        const formDataToSend = new FormData();
-        formDataToSend.append('user_id', userdata.user_id);
-        formDataToSend.append('pan_number', formData.pan_number);
-        formDataToSend.append('aadhar_number', formData.aadhar_number);
-        
-        Object.entries(documents).forEach(([key, file]) => {
-            if (file) {
-                formDataToSend.append(key, file);
-            }
-        });
-
         try {
-            const response = await axios.post(
-                'http://localhost:5001/members/kyc',
-                formDataToSend,
-                {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`,
-                        'Content-Type': 'multipart/form-data'
-                    }
+            const formDataToSend = new FormData();
+            formDataToSend.append('user_id', userdata.user_id);
+            formDataToSend.append('pan_number', formData.pan_number);
+            formDataToSend.append('aadhar_number', formData.aadhar_number);
+            
+            Object.entries(documents).forEach(([key, file]) => {
+                if (file) {
+                    formDataToSend.append(key, file);
                 }
-            );
+            });
+
+            const response = await axios.post('http://localhost:5001/members/kyc', formDataToSend, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
 
             if (response.data.success) {
+                console.log("Kyc updated successfully:", response.data.data);
                 updateuserdata(response.data.data);
                 setShowSuccess(true);
                 setSuccessMessages(prev => ({
@@ -172,9 +176,17 @@ const KycForm = () => {
                 }));
                 // navigate('/dashboard');                
             }
-            console.log(response.data);
+            // console.log(response.data);
         } catch (error) {
-            setErrors({ submit: error.response?.data?.message || 'Failed to submit KYC details' });
+            if (error.response) {
+                if (error.response.data.message === "Invalid token" || error.response.data.message === "Token has expired") {
+                    setErrors(prev => ({ ...prev, serverError: error.response.data.message }));
+                } else {
+                    setErrors(prev => ({ ...prev, serverError: error.response.data.message }));
+                }
+            } else {
+                setErrors(prev => ({ ...prev, serverError: "An error occurred while submitting the form" }));
+            }
         } finally {
             setLoading(false);
         }

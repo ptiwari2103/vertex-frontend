@@ -166,17 +166,13 @@ const Register = () => {
     // Handle form input change
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        // Special handling for name field to capitalize first letter of each word
+        // Special handling for name field to make all text uppercase
         if (name === 'name' || name === 'guardian_name') {
-            const capitalizedValue = value
-                .toLowerCase()
-                .split(' ')
-                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(' ');
+            const upperCaseValue = value.toUpperCase();
             
             setFormData(prev => ({
                 ...prev,
-                [name]: capitalizedValue
+                [name]: upperCaseValue
             }));
         } else if (type === "checkbox") {
             setFormData(prev => ({

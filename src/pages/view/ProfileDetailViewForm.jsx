@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from 'react';
-import { AuthContext } from '../contexts/authContext';
+import { AuthContext } from '../../contexts/authContext';
 
 const ProfileDetailViewForm = () => {
     const { userdata } = useContext(AuthContext);
@@ -224,18 +224,13 @@ const ProfileDetailViewForm = () => {
                         </div>
                     </div>
 
-                    {/* Checkbox fields */}
+                    {/* Display Yes/No for Divyang status */}
                     <div className="space-y-2">
                         <div className="flex items-center">
-                            <input
-                                type="checkbox"
-                                name="is_divyang"
-                                checked={userdata?.profile?.is_divyang || false}
-                                readOnly
-                                disabled
-                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                            />
-                            <label className="ml-2 block text-sm text-gray-900">Are you Divyang?</label>
+                            <label className="block text-sm text-gray-700"><strong>Are you Divyang?</strong></label>
+                            <span className="ml-2 text-sm text-gray-900">
+                                {userdata?.profile?.is_divyang ? 'Yes' : 'No'}
+                            </span>
                         </div>
 
                         {userdata?.profile?.is_divyang && (
@@ -259,6 +254,19 @@ const ProfileDetailViewForm = () => {
                                 <option value="Multiple Disabilities">Multiple Disabilities</option>
                             </select>                                
                             </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Divyang Percentage*</label>
+                                <input
+                                    type="number"
+                                    name="divyang_percentage"
+                                    className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    value={userdata?.profile?.divyang_percentage || ''}
+                                    readOnly
+                                    disabled
+                                    required
+                                />
+                            </div>
                             
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Divyang Certificate*</label>
@@ -276,15 +284,10 @@ const ProfileDetailViewForm = () => {
                         )}
 
                         <div className="flex items-center">
-                            <input
-                                type="checkbox"
-                                name="is_senior_citizen"
-                                checked={userdata?.is_senior_citizen || false}
-                                readOnly
-                                disabled
-                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                            />
-                            <label className="ml-2 block text-sm text-gray-900">Are you a Senior Citizen?</label>
+                            <label className="ml-2 block text-sm text-gray-900"><strong>Are you a Senior Citizen?</strong></label>
+                            <span className="ml-2 text-sm text-gray-900">
+                                {userdata?.profile?.is_senior_citizen ? 'Yes' : 'No'}
+                            </span>
                         </div>
                     </div>
                     

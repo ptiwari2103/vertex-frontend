@@ -1,11 +1,11 @@
 import { useState, useContext, useEffect } from 'react';
-// import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { AuthContext } from '../contexts/authContext';
+import { AuthContext } from '../../contexts/authContext';
+import { useNavigate } from 'react-router-dom';
 
 const ProfileForm = () => {
-    const { userdata, updateuserdata } = useContext(AuthContext);
-    // const navigate = useNavigate();
+    const { userdata, updateuserdata, logout } = useContext(AuthContext);
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         email_id: '',
         nominee_name: '',
@@ -15,7 +15,8 @@ const ProfileForm = () => {
         is_divyang: false,
         is_senior_citizen: false,
         guardian_relation: '',
-        divyang_type: ''
+        divyang_type: '',
+        divyang_percentage: '',
     });
 
     const [documents, setDocuments] = useState({
@@ -34,6 +35,14 @@ const ProfileForm = () => {
     const [successMessages, setSuccessMessages] = useState({serverresponse: ""});
     const [profileStatus, setProfileStatus] = useState(null);
     const [profileEdit, setProfileEdit] = useState(false); // Initialize as false by default
+
+    useEffect(() => {
+        if (errors.serverError === "Invalid token" || errors.serverError === "Token has expired") {
+            console.log("Invalid token or token has expired");
+            logout();
+            navigate('/');
+        }
+    }, [errors.serverError, logout, navigate]);
 
     const nomineeRelations = ['Father', 'Mother', 'Brother', 'Sister', 'Wife', 'Husband', 'Son', 'Daughter'];
 
@@ -56,8 +65,8 @@ const ProfileForm = () => {
             guardian_relation: userdata.guardian_relation || '',
             date_of_birth: userdata.date_of_birth || '',
             gender: userdata.gender || '',            
-            divyang_type: profile.divyang_type || ''
-
+            divyang_type: profile.divyang_type || '',
+            divyang_percentage: profile.divyang_percentage || ''
         }));
 
         if (profile_image) {
@@ -230,6 +239,7 @@ const ProfileForm = () => {
             );
 
             if (response.data.success) {
+                console.log("Profile updated successfully:", response.data.data);
                 updateuserdata(response.data.data);
                 setShowSuccess(true);
                 setSuccessMessages(prev => ({
@@ -238,8 +248,16 @@ const ProfileForm = () => {
                 }));
             }
         } catch (error) {
-            // setErrors({ submit: error.response?.data?.message || 'Failed to update profile' });
-            setErrors({ submit: error.response?.data?.error || error.response?.data?.message || 'Failed to update profile' });
+           //setErrors(prev => ({ ...prev, serverError: error.response?.data?.error || error.response?.data?.message || 'Failed to update profile' }));
+            if (error.response) {
+                if (error.response.data.message === "Invalid token" || error.response.data.message === "Token has expired") {
+                    setErrors(prev => ({ ...prev, serverError: error.response.data.message }));
+                } else {
+                    setErrors(prev => ({ ...prev, serverError: error.response.data.message }));
+                }
+            } else {
+                setErrors(prev => ({ ...prev, serverError: "An error occurred while submitting the form" }));
+            }
         } finally {
             setLoading(false);
         }
@@ -512,6 +530,20 @@ const ProfileForm = () => {
                                     <option value="Mental Illness">Mental Illness</option>
                                     <option value="Multiple Disabilities">Multiple Disabilities</option>
                                 </select>                                
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Divyang Percentage*</label>
+                                <input
+                                    type="number"
+                                    name="divyang_percentage"
+                                    min="0"
+                                    max="100"
+                                    className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    value={formData.divyang_percentage || ''}
+                                    onChange={handleChange}
+                                    required
+                                />
                             </div>
                             
                             <div>

@@ -13,6 +13,7 @@ export const AuthProvider = ({ children }) => {
             return {};
         }
     });
+    
     const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("token"));
 
     // Function to update authentication data
@@ -21,14 +22,7 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem("token", data.token);
             localStorage.setItem("userdata", JSON.stringify(data.user));
             setIsAuthenticated(true);
-            // console.log("before update in login:");
-            // console.log(userdata);
-            // console.log("neet to update:");
-            // console.log(data);
-            // console.log("Processing update:");
             setUserdata(data.user);
-            // console.log("after update in login:");
-            // console.log(userdata);
         } catch (error) {
             console.error("Error in login:", error);
         }
@@ -48,14 +42,43 @@ export const AuthProvider = ({ children }) => {
     };
 
     // Monitor userdata changes
-    useEffect(() => {
-        console.log("userdata updated in authcontext:", userdata);
-    }, [userdata]);
+    // useEffect(() => {
+    //     console.log("userdata updated in authcontext:", userdata);
+    // }, [userdata]);
+
+    // useEffect(() => {
+    //     const token = localStorage.getItem("token");
+    //     setIsAuthenticated(!!token);
+    // }, []);
+
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
-        setIsAuthenticated(!!token);
+        try {
+            const token = localStorage.getItem("token");
+            const tmp_userdata = localStorage.getItem("userdata");
+            if (tmp_userdata && token && 
+                tmp_userdata !== "undefined" && 
+                tmp_userdata !== "null" && 
+                tmp_userdata !== "" && 
+                tmp_userdata !== "{}" && 
+                tmp_userdata !== "[]") {
+                const parsedUserData = JSON.parse(tmp_userdata);
+                if (Object.keys(parsedUserData).length > 0) {
+                    setIsAuthenticated(true);
+                    setUserdata(parsedUserData);
+                    return;
+                }
+            }
+            // If any condition fails, clear the auth state
+            setIsAuthenticated(false);
+            setUserdata({});
+        } catch (error) {
+            console.error("Error in auth check:", error);
+            setIsAuthenticated(false);
+            setUserdata({});
+        }
     }, []);
+    
 
     return (
         <AuthContext.Provider value={{ login, logout, isAuthenticated, userdata, updateuserdata }}>

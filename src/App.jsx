@@ -10,9 +10,6 @@ import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound.jsx";
 import { AuthProvider } from "./components/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
-import KycForm from "./pages/KycForm";
-import BankForm from "./pages/BankForm";
-import ProfileForm from "./pages/ProfileForm";
 import ProfileEditForm from "./pages/ProfileEditForm";
 import ProfileViewForm from "./pages/ProfileViewForm";
 import PinManagement from "./pages/PinManagement";
@@ -36,21 +33,6 @@ function App() {
                         <Route path="dashboard" element={
                             <ProtectedRoute>
                                 <Dashboard />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="kycform" element={
-                            <ProtectedRoute>
-                                <KycForm />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="bankform" element={
-                            <ProtectedRoute>
-                                <BankForm />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="profileform" element={
-                            <ProtectedRoute>
-                                <ProfileForm />
                             </ProtectedRoute>
                         } />
                         <Route path="profileeditform" element={
