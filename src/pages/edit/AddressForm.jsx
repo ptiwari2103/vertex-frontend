@@ -71,22 +71,22 @@ const AddressForm = () => {
     };
 
     useEffect(() => {
-        if (!userdata?.userAddress) return;
+        if (!userdata?.address) return;
 
-        const { userAddress } = userdata;
+        const { address } = userdata;
         setFormData(prev => ({
             ...prev,
-            permanent_address: userAddress?.latestAddress?.permanent_address || userAddress?.activeAddress?.permanent_address || '',
-            permanent_city: userAddress?.latestAddress?.permanent_city || userAddress?.activeAddress?.permanent_city || '',
-            permanent_state: userAddress?.latestAddress?.permanent_state || userAddress?.activeAddress?.permanent_state || '',
-            permanent_district: userAddress?.latestAddress?.permanent_district || userAddress?.activeAddress?.permanent_district || '',
-            permanent_pincode: userAddress?.latestAddress?.permanent_pincode || userAddress?.activeAddress?.permanent_pincode || '',
-            correspondence_address: userAddress?.latestAddress?.correspondence_address || userAddress?.activeAddress?.correspondence_address || '',
-            correspondence_city: userAddress?.latestAddress?.correspondence_city || userAddress?.activeAddress?.correspondence_city || '',
-            correspondence_state: userAddress?.latestAddress?.correspondence_state || userAddress?.activeAddress?.correspondence_state || '',
-            correspondence_district: userAddress?.latestAddress?.correspondence_district || userAddress?.activeAddress?.correspondence_district || '',
-            correspondence_pincode: userAddress?.latestAddress?.correspondence_pincode || userAddress?.activeAddress?.correspondence_pincode || '',
-            is_same_address: userAddress?.latestAddress?.is_same_address || userAddress?.activeAddress?.is_same_address || false
+            permanent_address: address?.permanent_address || '',
+            permanent_city: address?.permanent_city || '',
+            permanent_state: address?.permanent_state || '',
+            permanent_district: address?.permanent_district || '',
+            permanent_pincode: address?.permanent_pincode || '',
+            correspondence_address: address?.correspondence_address || '',
+            correspondence_city: address?.correspondence_city || '',
+            correspondence_state: address?.correspondence_state || '',
+            correspondence_district: address?.correspondence_district || '',
+            correspondence_pincode: address?.correspondence_pincode || '',
+            is_same_address: address?.is_same_address || false
         }));
 
 

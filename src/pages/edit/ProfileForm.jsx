@@ -92,22 +92,18 @@ const ProfileForm = () => {
         }
 
         // Set profileEdit based on profile_status
-        if(userdata.status === "Approved") {
+        if(userdata.profile.profile_status !== "Pending") {
             setProfileEdit(false);
-            console.log("profile edit set to false");
+            //console.log("profile edit set to false");
         } else {
             setProfileEdit(true);
-            console.log("profile edit set to true");
+            //console.log("profile edit set to true");
         }        
         const profileMessages = {
             Pending: "Your Profile is pending.",
-            Active: "Your Profile is pending.", 
-            Inactive: "Your Profile is pending.", 
-            Blocked: "Your Profile is pending.",  
-            Deleted: "Your Profile is pending.",
-            // Approved: "Your profile have been approved.",            
+            Submitted: "Your Profile have been submitted.",                      
         };        
-        setProfileStatus(profileMessages[userdata.status] || null);
+        setProfileStatus(profileMessages[userdata.profile.profile_status] || null);
 
     }, [userdata]);
 
@@ -274,11 +270,11 @@ const ProfileForm = () => {
                     </div>
                 )}
                 
-                {profileEdit===false && (
+                {/* {profileEdit===false && (
                     <div className="mb-4 p-2 bg-green-100 border border-green-400 text-green-700 rounded text-sm">
                         Your Profile have been approved.
                     </div>
-                )}
+                )} */}
 
                 {errors.submit && (
                     <div className="mb-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
@@ -458,6 +454,7 @@ const ProfileForm = () => {
                                 value={formData.nominee_contact}
                                 onChange={handleChange}
                                 required
+                                maxLength={10}
                                 className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                             {errors.nominee_contact && (

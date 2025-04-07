@@ -821,7 +821,7 @@ const Register = () => {
                                     </span> 
                                     <span className="font-medium text-blue-700">{userDetails?.user?.name}</span>
                                 </p>
-                                <div className="border-t border-blue-200"></div>
+                                {/* <div className="border-t border-blue-200"></div>
                                 <p className="text-gray-800 text-lg flex items-center justify-between group hover:bg-blue-50 p-2 rounded transition-all">
                                     <span className="font-bold flex items-center">
                                         <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -830,7 +830,7 @@ const Register = () => {
                                         Password
                                     </span> 
                                     <span className="font-medium text-blue-700">{userDetails?.user?.password}</span>
-                                </p>
+                                </p> */}
                                 <div className="border-t border-blue-200"></div>
                                 <p className="text-gray-800 text-lg flex items-center justify-between group hover:bg-blue-50 p-2 rounded transition-all">
                                     <span className="font-bold flex items-center">

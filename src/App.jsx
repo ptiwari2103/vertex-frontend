@@ -13,6 +13,10 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import ProfileEditForm from "./pages/ProfileEditForm";
 import ProfileViewForm from "./pages/ProfileViewForm";
 import PinManagement from "./pages/PinManagement";
+import CardManagement from "./pages/CardManagement";
+import Agent from "./pages/Agent";
+import Franchise from "./pages/Franchise";
+import Notification from "./pages/Notification";
 
 function App() {
     return (
@@ -48,6 +52,26 @@ function App() {
                         <Route path="pinmanagement" element={
                             <ProtectedRoute>
                                 <PinManagement />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="cardmanagement" element={
+                            <ProtectedRoute>
+                                <CardManagement />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="notification" element={
+                            <ProtectedRoute>
+                                <Notification />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="agent" element={
+                            <ProtectedRoute>
+                                <Agent />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="franchise" element={
+                            <ProtectedRoute>
+                                <Franchise />
                             </ProtectedRoute>
                         } />
                         <Route path="*" element={<NotFound />} />

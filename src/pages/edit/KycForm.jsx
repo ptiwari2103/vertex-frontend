@@ -31,7 +31,7 @@ const KycForm = () => {
     
     useEffect(() => {
         if (!userdata) return;
-        console.log("Update KycForm in useEffect");
+        // console.log("Update KycForm in useEffect");
         const pan_number = userdata.profile.pan_number;
         const aadhar_number = userdata.profile.aadhar_number;
         const pan_number_image = "http://localhost:5001/"+userdata.profile.pan_number_image;
@@ -39,19 +39,19 @@ const KycForm = () => {
         const aadhar_number_image_back = "http://localhost:5001/"+userdata.profile.aadhar_number_image_back;
         
         // Set kycEdit based on kyc_status
-        if(userdata.profile.kyc_status === "Approved") {
+        if(userdata.profile.kyc_status !== "Pending") {
             setKycEdit(false);
-            console.log("kyc edit set to false");
+            // console.log("kyc edit set to false");
         } else {
             setKycEdit(true);
-            console.log("kyc edit set to true");
+            // console.log("kyc edit set to true");
         }
         
         const kycMessages = {
             Pending: "Your KYC is pending.",
-            Submitted: "Your KYC is pending for approval.",
-            // Approved: "Your KYC is approved.",
-            Rejected: "Your KYC is rejected."
+            Submitted: "Your KYC have been submitted.",
+            Approved: "Your KYC have been approved.",
+            Rejected: "Your KYC have been rejected."
         };
         
         setKycStatus(kycMessages[userdata.profile.kyc_status] || null);
@@ -165,7 +165,7 @@ const KycForm = () => {
                     'Content-Type': 'multipart/form-data'
                 }
             });
-
+            console.log("Response:", response.data);
             if (response.data.success) {
                 console.log("Kyc updated successfully:", response.data.data);
                 updateuserdata(response.data.data);
@@ -175,17 +175,26 @@ const KycForm = () => {
                     serverresponse: response.data.message
                 }));
                 // navigate('/dashboard');                
+            }else{
+                setErrors(prev => ({ ...prev, serverError: response.data.message }));
             }
-            // console.log(response.data);
         } catch (error) {
+            console.log("Error:", error);
             if (error.response) {
-                if (error.response.data.message === "Invalid token" || error.response.data.message === "Token has expired") {
-                    setErrors(prev => ({ ...prev, serverError: error.response.data.message }));
+                if (error.response.status === 400) {
+                    setErrors(prev => ({
+                        ...prev,
+                        serverError: error.response.data.message
+                    }));
                 } else {
-                    setErrors(prev => ({ ...prev, serverError: error.response.data.message }));
+                    if (error.response.data.message === "Invalid token" || error.response.data.message === "Token has expired") {
+                        setErrors(prev => ({ ...prev, serverError: error.response.data.message }));
+                    } else {
+                        setErrors(prev => ({ ...prev, serverError: error.response.data.message }));
+                    }
                 }
             } else {
-                setErrors(prev => ({ ...prev, serverError: "An error occurred while submitting the form" }));
+                setErrors(prev => ({ ...prev, serverError: "Network error. Please check your connection and try again." }));
             }
         } finally {
             setLoading(false);
@@ -203,11 +212,11 @@ const KycForm = () => {
                     </div>
                 )}
                 
-                {kycEdit===false && (
+                {/* {kycEdit===false && (
                     <div className="mb-4 p-2 bg-green-100 border border-green-400 text-green-700 rounded text-sm">
                         Your KYC have been approved.
                     </div>
-                )}
+                )} */}
 
                 {errors.submit && (
                     <div className="mb-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
@@ -266,6 +275,7 @@ const KycForm = () => {
                             <input
                                 type="file"
                                 name="pan_number_image"
+                                required
                                 onChange={handleFileChange}
                                 accept="image/*"
                                 className="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
@@ -283,6 +293,7 @@ const KycForm = () => {
                             <input
                                 type="file"
                                 name="aadhar_number_image_front"
+                                required
                                 onChange={handleFileChange}
                                 accept="image/*"
                                 className="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
@@ -300,6 +311,7 @@ const KycForm = () => {
                             <input
                                 type="file"
                                 name="aadhar_number_image_back"
+                                required
                                 onChange={handleFileChange}
                                 accept="image/*"
                                 className="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"

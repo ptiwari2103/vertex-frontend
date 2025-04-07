@@ -59,6 +59,7 @@ const PinManagement = () => {
     }, [userdata?.id, pagination.currentPage, pagination.itemsPerPage, sorting.field, sorting.order]);
 
     useEffect(() => {
+        console.log("Fetching pins...",fetchPins);
         fetchPins();
     }, [fetchPins]);
 
