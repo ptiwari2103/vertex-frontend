@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useCallback, useRef } from "react";
+import React, { useState, useEffect, useContext, useCallback } from "react";
 import axios from "axios";
 import { AuthContext } from "../contexts/authContext";
 
@@ -24,18 +24,12 @@ const PinManagement = () => {
     const [pinPasswordError, setPinPasswordError] = useState('');
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [pageLoaded, setPageLoaded] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
-    const [showVerificationPassword, setShowVerificationPassword] = useState(false);
-    
-    // Add ref for input focus
-    const pinInputRef = useRef(null);
-    const pinVerificationInputRef = useRef(null);
 
     // Function to check pin password status and show appropriate modal
     const checkPinPasswordStatus = useCallback(() => {
         if (!userdata) return;
         
-        if (userdata.pin_password_status === 'Active') {
+        if (userdata.pin_password_status === 'Active' && userdata.pin_password) {
             setShowVerifyModal(true);
         } else {
             setShowCreateModal(true);
@@ -47,7 +41,7 @@ const PinManagement = () => {
         try {
             setPinPasswordError('');
             const response = await axios.post(
-                'http://localhost:5001/members/verify-pin-password',
+                'http://localhost:5001/users/verify-pin-password',
                 { pin_password: pinPassword, user_id: userdata?.id },
                 { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
             );
@@ -75,7 +69,7 @@ const PinManagement = () => {
             }
             
             const response = await axios.post(
-                'http://localhost:5001/members/create-pin-password',
+                'http://localhost:5001/users/create-pin-password',
                 { pin_password: pinPassword, user_id: userdata?.id },
                 { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
             );
@@ -187,124 +181,66 @@ const PinManagement = () => {
     };
 
     // Modal component for verifying pin password
-    const VerifyPinPasswordModal = () => {
-        useEffect(() => {
-            if (pinVerificationInputRef.current) {
-                pinVerificationInputRef.current.focus();
-            }
-        }, []);
-
-        return (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-                    <h2 className="text-xl font-semibold mb-4">Enter Pin Password</h2>
-                    <p className="mb-4">Please enter your 4-digit pin password to view pins.</p>
-                    <div className="relative"> 
-                    <input
-                        type={showVerificationPassword ? 'text' : 'password'}
-                        value={pinPassword}
-                        ref={pinVerificationInputRef}
-                        onChange={(e) => setPinPassword(e.target.value)}
-                        placeholder="Enter pin password"
-                        maxLength={4}
-                        className="w-full p-2 border border-gray-300 rounded mb-4"
-                    />
+    const VerifyPinPasswordModal = () => (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+                <h2 className="text-xl font-semibold mb-4">Enter Pin Password</h2>
+                <p className="mb-4">Please enter your pin password to view pins.</p>
+                
+                <input
+                    type="password"
+                    value={pinPassword}
+                    onChange={(e) => setPinPassword(e.target.value)}
+                    placeholder="Enter pin password"
+                    className="w-full p-2 border border-gray-300 rounded mb-4"
+                />
+                
+                {pinPasswordError && (
+                    <p className="text-red-500 mb-4">{pinPasswordError}</p>
+                )}
+                
+                <div className="flex justify-end space-x-2">
                     <button
-                        type="button"
-                        className="absolute right-2 top-2 text-gray-500 hover:text-gray-700"
-                        onClick={() => {
-                            setShowVerificationPassword(!showVerificationPassword);
-                            // Return focus to the input after toggling visibility
-                            setTimeout(() => {
-                                if (pinVerificationInputRef.current) {
-                                    pinVerificationInputRef.current.focus();
-                                }
-                            }, 0);
-                        }}
+                        onClick={verifyPinPassword}
+                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                     >
-                        {showVerificationPassword ? "Hide" : "Show"}
+                        Submit
                     </button>
-                    </div>
-                    
-                    {pinPasswordError && (
-                        <p className="text-red-500 mb-4">{pinPasswordError}</p>
-                    )}
-                    
-                    <div className="flex justify-end space-x-2">
-                        <button
-                            onClick={verifyPinPassword}
-                            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                        >
-                            Submit
-                        </button>
-                    </div>
                 </div>
             </div>
-        );
-    };
+        </div>
+    );
 
     // Modal component for creating pin password
-    const CreatePinPasswordModal = () => {
-        // Use useEffect to focus the input when the component mounts
-        useEffect(() => {
-            if (pinInputRef.current) {
-                pinInputRef.current.focus();
-            }
-        }, []);
-
-        return (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-semibold">Create Pin Password</h2>
-                        <button onClick="#" className="text-sm text-blue-500 hover:underline">
-                            Dashboard
-                        </button>
-                    </div>
-
-                    <p className="mb-4">Please create a 4 digit pin password to secure your pins.</p>
-                    <div className="relative">
-                    <input
-                        ref={pinInputRef}
-                        type={showPassword ? 'text' : 'password'}
-                        value={pinPassword}
-                        onChange={(e) => setPinPassword(e.target.value)}
-                        maxLength={4}
-                        placeholder="Create pin password"
-                        className="w-full p-2 border border-gray-300 rounded mb-4"
-                    />
+    const CreatePinPasswordModal = () => (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+                <h2 className="text-xl font-semibold mb-4">Create Pin Password</h2>
+                <p className="mb-4">Please create a pin password to secure your pins.</p>
+                
+                <input
+                    type="password"
+                    value={pinPassword}
+                    onChange={(e) => setPinPassword(e.target.value)}
+                    placeholder="Create pin password"
+                    className="w-full p-2 border border-gray-300 rounded mb-4"
+                />
+                
+                {pinPasswordError && (
+                    <p className="text-red-500 mb-4">{pinPasswordError}</p>
+                )}
+                
+                <div className="flex justify-end space-x-2">
                     <button
-                        type="button"
-                        className="absolute right-2 top-2 text-gray-500 hover:text-gray-700"
-                        onClick={() => {
-                            setShowPassword(!showPassword);
-                            // Return focus to the input after toggling visibility
-                            setTimeout(() => {
-                                if (pinInputRef.current) {
-                                    pinInputRef.current.focus();
-                                }
-                            }, 0);
-                        }}
+                        onClick={createPinPassword}
+                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                     >
-                        {showPassword ? "Hide" : "Show"}
-                    </button>   
-                    </div>
-                    {pinPasswordError && (
-                        <p className="text-red-500 mb-4">{pinPasswordError}</p>
-                    )}
-                    
-                    <div className="flex justify-end space-x-2">
-                        <button
-                            onClick={createPinPassword}
-                            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                        >
-                            Create
-                        </button>
-                    </div>
+                        Create
+                    </button>
                 </div>
             </div>
-        );
-    };
+        </div>
+    );
 
     if (error) {
         return <div className="p-6 text-red-500">{error}</div>;
