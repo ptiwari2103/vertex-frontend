@@ -11,7 +11,7 @@ const HeaderMenu = () => {
         navigate('/');
     };
 
-    console.log("Auth Context in HeaderMenu:", userdata, isAuthenticated);
+    console.log("Auth Context in HeaderMenu:", userdata, isAuthenticated, localStorage.getItem("token"));
 
     useEffect(() => {
         if(!userdata.id && isAuthenticated) {
@@ -28,12 +28,18 @@ const HeaderMenu = () => {
                 <>
                     <ul className="flex space-x-6">
                         <li><NavLink to="/dashboard" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Dashboard</NavLink></li>
-                        <li><NavLink to="/profileeditform" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Profile Edit Form</NavLink></li>
+                        {userdata?.is_edit !== "Approved" && (
+                            <li><NavLink to="/profileeditform" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Profile Edit Form</NavLink></li>
+                        )}
                         <li><NavLink to="/profileviewform" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Profile View Form</NavLink></li>
                         <li><NavLink to="/pinmanagement" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Pin Management</NavLink></li>
                         <li><NavLink to="/cardmanagement" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Credit Card</NavLink></li>   
-                        <li><NavLink to="/franchise" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Franchise</NavLink></li>   
-                        <li><NavLink to="/agent" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Agent</NavLink></li> 
+                        {userdata?.profile?.is_fanchise === "Active" && (
+                            <li><NavLink to="/franchise" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Franchise</NavLink></li>   
+                        )}
+                        {userdata?.profile?.is_agent === "Active" && (
+                            <li><NavLink to="/agent" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Agent</NavLink></li> 
+                        )}
                         <li><NavLink to="/notification" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Notification</NavLink></li> 
                     </ul>
                     <div className="relative">

@@ -20,6 +20,7 @@ const CardManagement = () => {
                     Authorization: `Bearer ${localStorage.getItem("token")}`
                 }
             });
+            console.log("Card details:", response.data);
             setCardDetails(response.data);
         } catch (err) {
             console.error("Error fetching card details:", err);
@@ -64,11 +65,43 @@ const CardManagement = () => {
             )}
             {cardDetails ? (
                 cardDetails.status === "Approved" ? (
-                    <div className="mb-6">
-                        <h2>Card Details</h2>
-                        <p>Card Number: {cardDetails.number}</p>
-                        <p>Expiry Date: {cardDetails.expiry}</p>
-                        <p>Card Holder: {cardDetails.holder}</p>
+                    <div className="mb-6 flex justify-center">
+                        <div className="w-96 h-56 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg p-6 relative overflow-hidden">
+                            {/* Card chip */}
+                            <div className="w-12 h-10 bg-yellow-300 rounded-md mb-6"></div>
+                            
+                            {/* Card number */}
+                            <div className="text-white text-xl font-mono tracking-wider mb-4">
+                                {cardDetails.card_number?.match(/.{1,4}/g)?.join(' ') || '•••• •••• •••• ••••'}
+                            </div>
+                            
+                            {/* Expiry date */}
+                            <div className="flex items-center">
+                                <div className="mr-6">
+                                    <div className="text-gray-300 text-xs uppercase">Valid Thru</div>
+                                    <div className="text-white font-mono">
+                                        {cardDetails.expiry_month || 'MM'}/{cardDetails.expiry_year || 'YY'}
+                                    </div>
+                                </div>
+                                
+                                {/* Card holder name */}
+                                <div>
+                                    <div className="text-gray-300 text-xs uppercase">Card Holder</div>
+                                    <div className="text-white font-mono">{userdata?.name || 'YOUR NAME'}</div>
+                                </div>
+                            </div>
+                            
+                            {/* Card network logo - positioned in bottom right */}
+                            <div className="absolute bottom-4 right-6">
+                                <svg className="w-12 h-12 text-white opacity-80" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+                                </svg>
+                            </div>
+                            
+                            {/* Decorative circles */}
+                            <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full bg-white opacity-10"></div>
+                            <div className="absolute -bottom-20 -left-20 w-40 h-40 rounded-full bg-white opacity-10"></div>
+                        </div>
                     </div>
                 ) : cardDetails.status === "Pending" ? (
                     <div className="mb-6 text-yellow-500">

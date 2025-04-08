@@ -1,10 +1,8 @@
-import { useState, useEffect, useContext, useCallback, useRef } from "react";
+import React, { useState, useEffect, useContext, useCallback, useRef } from "react";
 import axios from "axios";
 import { AuthContext } from "../contexts/authContext";
-//import { useNavigate } from 'react-router-dom';
 
 const PinManagement = () => {
-    //const navigate = useNavigate();
     const { userdata, updateuserdata } = useContext(AuthContext);
     const [pins, setPins] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -57,16 +55,6 @@ const PinManagement = () => {
             // Update user data if data exists with an ID, regardless of success status
             if (response.data && response.data.data && response.data.data.id) {
                 updateuserdata(response.data.data);
-                console.log("User data updated:", response.data.data.pin_password_status);
-                if (response.data.data.pin_password_status !== 'Active') {
-                    console.log("Pin password not active");
-                    setShowCreateModal(true);
-                    setShowVerifyModal(false);
-                } else {
-                    console.log("Pin password active");
-                    setShowVerifyModal(true);
-                    setShowCreateModal(false);
-                }
             }
             
             if (response.data.success) {
@@ -75,11 +63,11 @@ const PinManagement = () => {
                 fetchPins();
             } else {
                 setPinPasswordError('Incorrect pin password. Please try again.');
+                //window.location.reload();
             }
         } catch (err) {
             console.error('Error verifying pin password:', err);
             setPinPasswordError('Failed to verify pin password. Please try again.');
-            
         }
     };
 
@@ -109,6 +97,7 @@ const PinManagement = () => {
                 fetchPins();
             } else {
                 setPinPasswordError('Failed to create pin password. Please try again.');
+                window.location.reload();
             }
         } catch (err) {
             console.error('Error creating pin password:', err);
