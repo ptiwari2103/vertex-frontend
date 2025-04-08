@@ -1,11 +1,10 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { useContext, useState, useEffect } from 'react';
+import { useContext, useEffect } from 'react';
 import { AuthContext } from '../contexts/authContext';
 
 const HeaderMenu = () => {
     const navigate = useNavigate();
     const { userdata, isAuthenticated, logout } = useContext(AuthContext);
-    const [isOpen, setIsOpen] = useState(false);
 
     const handleLogout = () => {
         logout();
@@ -38,10 +37,7 @@ const HeaderMenu = () => {
                         <li><NavLink to="/notification" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Notification</NavLink></li> 
                     </ul>
                     <div className="relative">
-                        <button
-                            className="flex items-center space-x-2"
-                            onClick={() => setIsOpen(!isOpen)}
-                        >
+                        <div className="flex items-center space-x-3">
                             {profileImageUrl ? (
                                 <img 
                                     src={profileImageUrl} 
@@ -53,19 +49,14 @@ const HeaderMenu = () => {
                                     <span className="text-gray-600 text-sm">{userdata?.name?.charAt(0) || "U"}</span>
                                 </div>
                             )}
-                            <span className="hidden sm:block ml-2">{userdata?.name || "N/A"}</span>
-                        </button>
-
-                        {isOpen && (
-                            <div className="absolute right-0 mt-2 w-40 bg-white text-black rounded shadow-lg">
-                                <button
-                                    onClick={handleLogout}
-                                    className="w-full text-left px-4 py-2 hover:bg-gray-100"
-                                >
-                                    Logout
-                                </button>
-                            </div>
-                        )}
+                            <span className="hidden sm:block">{userdata?.name || "N/A"}</span>
+                            <button
+                                onClick={handleLogout}
+                                className="ml-3 px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                            >
+                                Logout
+                            </button>
+                        </div>
                     </div>
                 </>
             ) : (
