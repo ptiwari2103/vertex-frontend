@@ -20,6 +20,8 @@ const BankForm = () => {
     const [errors, setErrors] = useState({});
     const [showSuccess, setShowSuccess] = useState(false);
     const [successMessages, setSuccessMessages] = useState({ serverresponse: "" });
+    const [pageStatus, setPageStatus] = useState(null);
+    const [pageEdit, setPageEdit] = useState(false);
     
     useEffect(() => {
         if (errors.serverError === "Invalid token" || errors.serverError === "Token has expired") {
@@ -54,18 +56,27 @@ const BankForm = () => {
     };
 
     useEffect(() => {
-        if (!userdata?.userBank) return;
+        if (!userdata?.bank) return;
 
-        const { userBank } = userdata;
+        const { bank } = userdata;
         setFormData(prev => ({
             ...prev,
-            account_holder: userBank?.latestBank?.account_holder || userBank?.activeBank?.account_holder || userdata.name|| '',
-            account_number: userBank?.latestBank?.account_number || userBank?.activeBank?.account_number || '',
-            bank_name: userBank?.latestBank?.bank_name || userBank?.activeBank?.bank_name || '',
-            branch_name: userBank?.latestBank?.branch_name || userBank?.activeBank?.branch_name || '',
-            ifsc_number: userBank?.latestBank?.ifsc_number || userBank?.activeBank?.ifsc_number || '',
-            account_type: userBank?.latestBank?.account_type || userBank?.activeBank?.account_type || ''
+            account_holder: bank?.account_holder || userdata.name|| '',
+            account_number: bank?.account_number || '',
+            bank_name: bank?.bank_name || '',
+            branch_name: bank?.branch_name || '',
+            ifsc_number: bank?.ifsc_number || '',
+            account_type: bank?.account_type || ''
         }));
+
+        // Set pageEdit based on status
+        if(userdata?.bank?.id) {
+            setPageEdit(false);
+            setPageStatus("Your Bank Details have been submitted.");
+        } else {
+            setPageEdit(true);
+            setPageStatus("Your Bank Details is pending.");
+        }        
 
     }, [userdata]);
 
@@ -134,6 +145,12 @@ const BankForm = () => {
                 <h2 className="text-xl font-bold text-center text-gray-800 mb-4">
                     Bank Account Details
                 </h2>
+
+                {pageStatus && (
+                    <div className="mb-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
+                        {pageStatus}
+                    </div>
+                )}
 
                 {errors.submit && (
                     <div className="mb-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
@@ -242,6 +259,8 @@ const BankForm = () => {
                             </select>
                         </div>
                     </div>
+
+                    {pageEdit===true && (
                     <div className="flex justify-end">
                         <button
                             type="submit"
@@ -251,6 +270,7 @@ const BankForm = () => {
                             {loading ? 'Submitting...' : 'Submit Bank Details'}
                             </button>
                     </div>
+                    )}  
                 </form>
             </div>
         </div>

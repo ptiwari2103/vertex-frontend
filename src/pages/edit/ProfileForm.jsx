@@ -413,6 +413,24 @@ const ProfileForm = () => {
                         </div>
 
                         <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Profile Image*</label>
+                            <input
+                                type="file"
+                                name="profile_image"
+                                onChange={handleFileChange}
+                                accept="image/*"
+                                required={!documents.profile_image}
+                                className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            {documentPreviews.profile_image && (
+                                <img src={documentPreviews.profile_image} alt="Profile Preview" className="mt-2 h-20 w-20 object-cover rounded-md" />
+                            )}
+                            {errors.profile_image && (
+                                <p className="text-red-500 text-xs mt-1">{errors.profile_image}</p>
+                            )}
+                        </div>
+
+                        <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Nominee Name*</label>
                             <input
                                 type="text"
@@ -475,28 +493,7 @@ const ProfileForm = () => {
                                 <p className="text-red-500 text-xs mt-1">{errors.nominee_email}</p>
                             )}
                         </div>
-                    </div>
-
-                    <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Profile Image*</label>
-                            <input
-                                type="file"
-                                name="profile_image"
-                                onChange={handleFileChange}
-                                accept="image/*"
-                                required={!documents.profile_image}
-                                className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                            {documentPreviews.profile_image && (
-                                <img src={documentPreviews.profile_image} alt="Profile Preview" className="mt-2 h-20 w-20 object-cover rounded-md" />
-                            )}
-                            {errors.profile_image && (
-                                <p className="text-red-500 text-xs mt-1">{errors.profile_image}</p>
-                            )}
-                        </div>
-
-                    {/* Checkbox fields */}
-                    <div className="space-y-2">
+                    
                         <div className="flex items-center">
                             <input
                                 type="checkbox"
@@ -562,7 +559,6 @@ const ProfileForm = () => {
                             </div>
                             </>
                         )}
-
                         
 
                         <div className="flex items-center">
