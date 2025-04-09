@@ -1,10 +1,12 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../contexts/authContext';
+import axios from 'axios';
 
 const HeaderMenu = () => {
     const navigate = useNavigate();
     const { userdata, isAuthenticated, logout } = useContext(AuthContext);
+    const [unreadCount, setUnreadCount] = useState(0);
 
     const handleLogout = () => {
         logout();
@@ -19,6 +21,34 @@ const HeaderMenu = () => {
             navigate('/');
         }
     }, [userdata, navigate, logout, isAuthenticated]);
+
+    // Fetch unread notification count
+    useEffect(() => {
+        const fetchUnreadCount = async () => {
+            if (!userdata?.id) return;
+            
+            try {
+                const response = await axios.get(`http://localhost:5001/messages/unread-count/${userdata.id}`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                    }
+                });
+                
+                if (response.data?.count !== undefined) {
+                    setUnreadCount(response.data.count);
+                }
+            } catch (error) {
+                console.error("Error fetching unread notification count:", error);
+            }
+        };
+
+        fetchUnreadCount();
+        
+        // Set up interval to check for new notifications every minute
+        const intervalId = setInterval(fetchUnreadCount, 60000);
+        
+        return () => clearInterval(intervalId);
+    }, [userdata?.id]);
 
     const profileImageUrl = userdata?.profile?.profile_image ? `http://localhost:5001/${userdata.profile.profile_image}` : null;
     
@@ -40,7 +70,16 @@ const HeaderMenu = () => {
                         {userdata?.profile?.is_agent === "Active" && (
                             <li><NavLink to="/agent" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Agent</NavLink></li> 
                         )}
-                        <li><NavLink to="/notification" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Notification</NavLink></li> 
+                        <li className="relative">
+                            <NavLink to="/notification" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>
+                                Notification
+                                {unreadCount > 0 && (
+                                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                                        {unreadCount > 9 ? '9+' : unreadCount}
+                                    </span>
+                                )}
+                            </NavLink>
+                        </li> 
                     </ul>
                     <div className="relative">
                         <div className="flex items-center space-x-3">

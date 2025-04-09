@@ -1,5 +1,4 @@
-
-import React, { useContext, useState, useEffect, useRef } from "react";
+import React, { useContext, useState, useEffect, useRef, useCallback } from "react";
 import { AuthContext } from "../contexts/authContext";
 import axios from "axios";
 
@@ -9,27 +8,59 @@ const Notification = () => {
     const [notifications, setNotifications] = useState([]);
     const fetchedRef = useRef(false);
 
+    const fetchNotifications = useCallback(async () => {
+        if (!userdata?.id) return;
+        
+        try {
+            const response = await axios.get(`http://localhost:5001/messages/notification/${userdata.id}`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                }
+            });
+            if (response.data?.data) {
+                setNotifications(response.data.data);
+            }
+        } catch (error) {
+            console.error("Error fetching notifications:", error);
+        }
+    }, [userdata?.id]);
+
     useEffect(() => {
-        const fetchNotification = async () => {
-            if (!userdata?.id || fetchedRef.current) return;
-            
-            try {
-                fetchedRef.current = true;
-                const response = await axios.get(`http://localhost:5001/messages/notification/${userdata.id}`, {
+        if (!fetchedRef.current && userdata?.id) {
+            fetchedRef.current = true;
+            fetchNotifications();
+        }
+    }, [userdata?.id, fetchNotifications]);
+
+    const markAsRead = async (notificationId) => {
+        try {
+            const response = await axios.post(
+                `http://localhost:5001/messages/mark-as-read`,
+                { 
+                    message_id: notificationId,
+                    user_id: userdata.id 
+                },
+                {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("token")}`
                     }
-                });
-                if (response.data?.data) {
-                    setNotifications(response.data.data);
                 }
-            } catch (error) {
-                console.error("Error fetching notification:", error);
+            );
+            
+            if (response.data.success) {
+                // Update the notification in the local state
+                setNotifications(prevNotifications => 
+                    prevNotifications.map(notification => 
+                        notification.id === notificationId 
+                            ? { ...notification, read_status: 'Read' } 
+                            : notification
+                    )
+                );
             }
-        };
-
-        fetchNotification();
-    }, [userdata?.id]);
+        } catch (error) {
+            console.error("Error marking notification as read:", error);
+        }
+    };
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -50,10 +81,21 @@ const Notification = () => {
                         <h3 className="font-bold text-2xl mb-4 text-gray-800">Notifications</h3>
                         <div className="space-y-4">
                             {notifications.map((notification) => (
-                                <div key={notification.id} className="bg-white border-l-4 border-blue-500 rounded-lg shadow-md overflow-hidden">
+                                <div 
+                                    key={notification.id} 
+                                    className={`bg-white border-l-4 ${notification.read_status === 'Unread' ? 'border-red-500 shadow-lg scale-105' : 'border-blue-500'} rounded-lg shadow-md overflow-hidden transition-all duration-300`}
+                                    onClick={() => notification.read_status === 'Unread' && markAsRead(notification.id)}
+                                >
                                     <div className="p-4">
                                         <div className="flex justify-between items-start mb-2">
-                                            <h4 className="font-semibold text-lg text-gray-800">{notification.subject}</h4>
+                                            <h4 className="font-semibold text-lg text-gray-800">
+                                                {notification.subject}
+                                                {notification.read_status === 'Unread' && (
+                                                    <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                        New
+                                                    </span>
+                                                )}
+                                            </h4>
                                             <span className="text-sm text-gray-500">{formatDate(notification.created_at)}</span>
                                         </div>
                                         <p className="text-gray-600 mb-3">{notification.message}</p>
@@ -61,8 +103,8 @@ const Notification = () => {
                                             <div className="mt-3">
                                                 <img 
                                                     src={`http://localhost:5001/${notification.image}`} 
-                                                    alt={notification.subject}
-                                                    className="max-h-48 rounded-lg object-cover"
+                                                    alt="Notification" 
+                                                    className="max-w-full h-auto rounded-lg"
                                                 />
                                             </div>
                                         )}
@@ -70,6 +112,11 @@ const Notification = () => {
                                 </div>
                             ))}
                         </div>
+                    </div>
+                )}
+                {notifications.length === 0 && (
+                    <div className="text-center py-8">
+                        <p className="text-gray-500">No notifications to display</p>
                     </div>
                 )}
             </div>
