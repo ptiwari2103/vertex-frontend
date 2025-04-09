@@ -4,7 +4,7 @@ import axios from "axios";
 
 const Notification = () => {
        
-    const { userdata } = useContext(AuthContext);
+    const { userdata, setnotification } = useContext(AuthContext);
     const [notifications, setNotifications] = useState([]);
     const fetchedRef = useRef(false);
 
@@ -37,28 +37,38 @@ const Notification = () => {
             const response = await axios.post(
                 `http://localhost:5001/messages/mark-as-read`,
                 { 
-                    message_id: notificationId,
-                    user_id: userdata.id 
+                    message_user_id: notificationId
                 },
                 {
                     headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                        'Content-Type': 'application/json'
                     }
                 }
             );
             
             if (response.data.success) {
                 // Update the notification in the local state
-                setNotifications(prevNotifications => 
-                    prevNotifications.map(notification => 
-                        notification.id === notificationId 
-                            ? { ...notification, read_status: 'Read' } 
-                            : notification
-                    )
+                const updatedNotifications = notifications.map(notification => 
+                    notification.message_user_id === notificationId 
+                        ? { ...notification, read_status: 'Read' } 
+                        : notification
                 );
                 
-                // Reload the notification count in the header
-                window.dispatchEvent(new CustomEvent('notification-read'));
+                setNotifications(updatedNotifications);
+                
+                // Calculate new unread count
+                const newUnreadCount = updatedNotifications.filter(
+                    notification => notification.read_status === 'Unread'
+                ).length;
+                
+                // Update the count in AuthContext
+                setnotification(newUnreadCount);
+                
+                // Dispatch event with the new count
+                window.dispatchEvent(new CustomEvent('notification-read', {
+                    detail: { unreadCount: newUnreadCount }
+                }));
             }
         } catch (error) {
             console.error("Error marking notification as read:", error);
@@ -92,7 +102,7 @@ const Notification = () => {
                                             : 'border-blue-500'} 
                                         rounded-lg shadow-md overflow-hidden transition-all duration-300 mb-4
                                         ${notification.read_status === 'Unread' ? 'ring-2 ring-red-300' : ''}`}
-                                    onClick={() => notification.read_status === 'Unread' && markAsRead(notification.id)}
+                                    onClick={() => notification.read_status === 'Unread' && markAsRead(notification.message_user_id)}
                                 >
                                     <div className="p-4">
                                         <div className="flex justify-between items-start mb-2">

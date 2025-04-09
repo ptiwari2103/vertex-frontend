@@ -5,8 +5,20 @@ import axios from 'axios';
 
 const HeaderMenu = () => {
     const navigate = useNavigate();
-    const { userdata, isAuthenticated, logout } = useContext(AuthContext);
-    const [unreadCount, setUnreadCount] = useState(0);
+    const { userdata, isAuthenticated, logout, getnotification, setnotification } = useContext(AuthContext);
+    
+    // Initialize totalNotification with 0, will be updated in useEffect
+    const [totalNotification, setTotalNotification] = useState(0);
+    
+    // Update totalNotification when component mounts and when getnotification changes
+    useEffect(() => {
+        const updateNotificationCount = async () => {
+            const count = await getnotification();
+            setTotalNotification(count);
+        };
+        
+        updateNotificationCount();
+    }, [getnotification]);
 
     const handleLogout = () => {
         logout();
@@ -37,7 +49,9 @@ const HeaderMenu = () => {
                 console.log("Unread count response:", response.data);
                 
                 if (response.data?.success && response.data?.data?.count !== undefined) {
-                    setUnreadCount(response.data.data.count);
+                    // Only update the count in AuthContext
+                    setnotification(response.data.data.count);
+                    // totalNotification will be updated via the dedicated useEffect with getnotification
                 }
             } catch (error) {
                 console.error("Error fetching unread notification count:", error);
@@ -46,24 +60,13 @@ const HeaderMenu = () => {
 
         fetchUnreadCount();
         
-        // Set up interval to check for new notifications every minute
-        const intervalId = setInterval(fetchUnreadCount, 60000);
         
-        // Listen for notification-read events
-        const handleNotificationRead = () => {
-            fetchUnreadCount();
-        };
-        
-        window.addEventListener('notification-read', handleNotificationRead);
-        
-        return () => {
-            clearInterval(intervalId);
-            window.removeEventListener('notification-read', handleNotificationRead);
-        };
-    }, [userdata?.id]);
+    }, [userdata?.id, setnotification]);
 
     const profileImageUrl = userdata?.profile?.profile_image ? `http://localhost:5001/${userdata.profile.profile_image}` : null;
     
+    console.log("Total notification count:", totalNotification);
+
     return (
         <nav className="bg-blue-500 p-3 text-white w-full flex justify-between items-center">
             {isAuthenticated ? (
@@ -85,9 +88,9 @@ const HeaderMenu = () => {
                         <li className="relative">
                             <NavLink to="/notification" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>
                                 Notification
-                                {unreadCount > 0 && (
+                                {totalNotification > 0 && (
                                     <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                                        {unreadCount > 9 ? '9+' : unreadCount}
+                                        {totalNotification > 9 ? '9+' : totalNotification}
                                     </span>
                                 )}
                             </NavLink>

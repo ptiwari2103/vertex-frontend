@@ -16,6 +16,16 @@ export const AuthProvider = ({ children }) => {
     
     const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("token"));
 
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    const getnotification = async () =>{
+        return unreadCount;
+    }
+    const setnotification = async (count) =>{
+        console.log("notification count = ",count)
+        setUnreadCount(count);
+    }
+
     // Function to update authentication data
     const login = async (data) => {
         try {
@@ -40,16 +50,6 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem("userdata", JSON.stringify(data));        
         setUserdata(data);
     };
-
-    // Monitor userdata changes
-    // useEffect(() => {
-    //     console.log("userdata updated in authcontext:", userdata);
-    // }, [userdata]);
-
-    // useEffect(() => {
-    //     const token = localStorage.getItem("token");
-    //     setIsAuthenticated(!!token);
-    // }, []);
 
 
     useEffect(() => {
@@ -81,7 +81,7 @@ export const AuthProvider = ({ children }) => {
     
 
     return (
-        <AuthContext.Provider value={{ login, logout, isAuthenticated, userdata, updateuserdata }}>
+        <AuthContext.Provider value={{ login, logout, isAuthenticated, userdata, updateuserdata, getnotification, setnotification }}>
             {children}
         </AuthContext.Provider>
     );
