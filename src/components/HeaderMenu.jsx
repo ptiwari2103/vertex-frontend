@@ -34,8 +34,10 @@ const HeaderMenu = () => {
                     }
                 });
                 
-                if (response.data?.count !== undefined) {
-                    setUnreadCount(response.data.count);
+                console.log("Unread count response:", response.data);
+                
+                if (response.data?.success && response.data?.data?.count !== undefined) {
+                    setUnreadCount(response.data.data.count);
                 }
             } catch (error) {
                 console.error("Error fetching unread notification count:", error);
@@ -47,7 +49,17 @@ const HeaderMenu = () => {
         // Set up interval to check for new notifications every minute
         const intervalId = setInterval(fetchUnreadCount, 60000);
         
-        return () => clearInterval(intervalId);
+        // Listen for notification-read events
+        const handleNotificationRead = () => {
+            fetchUnreadCount();
+        };
+        
+        window.addEventListener('notification-read', handleNotificationRead);
+        
+        return () => {
+            clearInterval(intervalId);
+            window.removeEventListener('notification-read', handleNotificationRead);
+        };
     }, [userdata?.id]);
 
     const profileImageUrl = userdata?.profile?.profile_image ? `http://localhost:5001/${userdata.profile.profile_image}` : null;

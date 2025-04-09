@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect, useRef, useCallback } from "react";
+import { useContext, useState, useEffect, useRef, useCallback } from "react";
 import { AuthContext } from "../contexts/authContext";
 import axios from "axios";
 
@@ -56,6 +56,9 @@ const Notification = () => {
                             : notification
                     )
                 );
+                
+                // Reload the notification count in the header
+                window.dispatchEvent(new CustomEvent('notification-read'));
             }
         } catch (error) {
             console.error("Error marking notification as read:", error);
@@ -79,26 +82,31 @@ const Notification = () => {
                 {notifications.length > 0 && (
                     <div className="w-full max-w-6xl mb-6 px-4">
                         <h3 className="font-bold text-2xl mb-4 text-gray-800">Notifications</h3>
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                             {notifications.map((notification) => (
                                 <div 
                                     key={notification.id} 
-                                    className={`bg-white border-l-4 ${notification.read_status === 'Unread' ? 'border-red-500 shadow-lg scale-105' : 'border-blue-500'} rounded-lg shadow-md overflow-hidden transition-all duration-300`}
+                                    className={`bg-white border-l-4 
+                                        ${notification.read_status === 'Unread' 
+                                            ? 'border-red-500 shadow-lg scale-105 cursor-pointer hover:bg-red-50 font-bold' 
+                                            : 'border-blue-500'} 
+                                        rounded-lg shadow-md overflow-hidden transition-all duration-300 mb-4
+                                        ${notification.read_status === 'Unread' ? 'ring-2 ring-red-300' : ''}`}
                                     onClick={() => notification.read_status === 'Unread' && markAsRead(notification.id)}
                                 >
                                     <div className="p-4">
                                         <div className="flex justify-between items-start mb-2">
-                                            <h4 className="font-semibold text-lg text-gray-800">
+                                            <h4 className={`font-semibold text-lg ${notification.read_status === 'Unread' ? 'text-red-700' : 'text-gray-800'}`}>
                                                 {notification.subject}
                                                 {notification.read_status === 'Unread' && (
-                                                    <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                    <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 animate-pulse">
                                                         New
                                                     </span>
                                                 )}
                                             </h4>
                                             <span className="text-sm text-gray-500">{formatDate(notification.created_at)}</span>
                                         </div>
-                                        <p className="text-gray-600 mb-3">{notification.message}</p>
+                                        <p className={`${notification.read_status === 'Unread' ? 'text-black font-medium' : 'text-gray-600'} mb-3`}>{notification.message}</p>
                                         {notification.image && (
                                             <div className="mt-3">
                                                 <img 
