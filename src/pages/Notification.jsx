@@ -7,6 +7,7 @@ const Notification = () => {
     const { userdata, setnotification } = useContext(AuthContext);
     const [notifications, setNotifications] = useState([]);
     const fetchedRef = useRef(false);
+    const [viewingNotification, setViewingNotification] = useState(null);
 
     const fetchNotifications = useCallback(async () => {
         if (!userdata?.id) return;
@@ -101,8 +102,14 @@ const Notification = () => {
                                             ? 'border-red-500 shadow-lg scale-105 cursor-pointer hover:bg-red-50 font-bold' 
                                             : 'border-blue-500'} 
                                         rounded-lg shadow-md overflow-hidden transition-all duration-300 mb-4
-                                        ${notification.read_status === 'Unread' ? 'ring-2 ring-red-300' : ''}`}
-                                    onClick={() => notification.read_status === 'Unread' && markAsRead(notification.message_user_id)}
+                                        ${notification.read_status === 'Unread' ? 'ring-2 ring-red-300' : ''}
+                                    `}
+                                    onClick={() => {
+                                        if (notification.read_status === 'Unread') {
+                                            markAsRead(notification.message_user_id);
+                                        }
+                                        setViewingNotification(notification.message_user_id);
+                                    }}
                                 >
                                     <div className="p-4">
                                         <div className="flex justify-between items-start mb-2">
@@ -116,16 +123,18 @@ const Notification = () => {
                                             </h4>
                                             <span className="text-sm text-gray-500">{formatDate(notification.created_at)}</span>
                                         </div>
-                                        <p className={`${notification.read_status === 'Unread' ? 'text-black font-medium' : 'text-gray-600'} mb-3`}>{notification.message}</p>
-                                        {notification.image && (
-                                            <div className="mt-3">
-                                                <img 
-                                                    src={`http://localhost:5001/${notification.image}`} 
-                                                    alt="Notification" 
-                                                    className="max-w-full h-auto rounded-lg"
-                                                />
-                                            </div>
-                                        )}
+                                        <div className={`transition-all duration-300 ${notification.read_status === 'Unread' && viewingNotification !== notification.message_user_id ? 'blur-sm' : ''}`}>
+                                            <p className={`${notification.read_status === 'Unread' ? 'text-black font-medium' : 'text-gray-600'} mb-3`}>{notification.message}</p>
+                                            {notification.image && (
+                                                <div className="mt-3">
+                                                    <img 
+                                                        src={`http://localhost:5001/${notification.image}`} 
+                                                        alt="Notification" 
+                                                        className="max-w-full h-auto rounded"
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             ))}

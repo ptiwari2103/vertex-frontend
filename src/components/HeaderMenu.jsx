@@ -102,14 +102,18 @@ const HeaderMenu = () => {
                                 <img 
                                     src={profileImageUrl} 
                                     alt="Profile" 
-                                    className="w-8 h-8 rounded-full object-cover border-2 border-white"
+                                    className="w-12 h-12 rounded-full object-cover border-2 border-white"
                                 />
                             ) : (
                                 <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center border-2 border-white">
                                     <span className="text-gray-600 text-sm">{userdata?.name?.charAt(0) || "U"}</span>
                                 </div>
                             )}
-                            <span className="hidden sm:block">{userdata?.name || "N/A"}</span>
+                            <span className="hidden sm:block">
+                                {userdata?.name || "N/A"}
+                                <br />
+                                User ID: {userdata?.user_id || ""}
+                            </span>
                             <button
                                 onClick={handleLogout}
                                 className="ml-3 px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
