@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../contexts/authContext';
 import axios from 'axios';
 
@@ -11,48 +11,10 @@ const Agent = () => {
 
     // Check if user is already an agent
     useEffect(() => {
-        // const checkAgentStatus = async () => {
-        //     try {
-        //         const response = await axios.get(`${import.meta.env.VITE_API_URL}/members/${userdata?.id}/agent-status`, {
-        //             headers: {
-        //                 Authorization: `Bearer ${localStorage.getItem('token')}`
-        //             }
-        //         });
-                
-        //         if (response.data.success) {
-        //             setIsAgent(true);
-        //         }
-        //     } catch (error) {
-        //         console.error('Error checking agent status:', error);
-        //     }
-        // };
-
-        // if (userdata?.id) {
-        //     checkAgentStatus();
-        // }
-
-
-    //     const getAgentMember = async() => {
-    //         try {
-    //             const agentmember = await axios.get(`${import.meta.env.VITE_API_URL}/members/${userdata?.id}/agent-members`, {
-    //                 headers: {
-    //                     Authorization: `Bearer ${localStorage.getItem('token')}`
-    //                 }
-    //             });
-    //             console.log(agentmember);
-    //         }catch(error){
-    //             console.error('Error checking get agent member:', error);
-    //         }
-    //     }
-    //     if(userdata?.id){
-    //         getAgentMember();
-    //     }
-
         if(userdata?.agent?.id){
             setIsAgent(true);
         }
-    
-     }, [userdata?.id]);
+    }, [userdata?.agent?.id]);
 
     const handleRequestAgent = async () => {
         setLoading(true);
