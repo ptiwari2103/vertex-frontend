@@ -82,9 +82,9 @@ const HeaderMenu = () => {
                         {userdata?.profile?.is_fanchise === "Active" && (
                             <li><NavLink to="/franchise" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Franchise</NavLink></li>   
                         )}
-                        {userdata?.profile?.is_agent === "Active" && (
-                            <li><NavLink to="/agent" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Agent</NavLink></li> 
-                        )}
+                        
+                        <li><NavLink to="/agent" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Agent</NavLink></li> 
+                        
                         <li className="relative">
                             <NavLink to="/notification" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>
                                 Notification

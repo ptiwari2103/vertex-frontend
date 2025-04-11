@@ -49,7 +49,7 @@ const PinManagement = () => {
         try {
             setPinPasswordError('');
             const response = await axios.post(
-                'http://localhost:5001/members/verify-pin-password',
+                `${import.meta.env.VITE_API_URL}/members/verify-pin-password`,
                 { pin_password: pinPassword, user_id: userdata?.id },
                 { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
             );
@@ -93,7 +93,7 @@ const PinManagement = () => {
             }
 
             const response = await axios.post(
-                'http://localhost:5001/members/create-pin-password',
+                `${import.meta.env.VITE_API_URL}/members/create-pin-password`,
                 { pin_password: pinPassword, user_id: userdata?.id },
                 { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
             );
@@ -119,7 +119,7 @@ const PinManagement = () => {
     const fetchPins = useCallback(async () => {
         try {
             setLoading(true);
-            const response = await axios.get(`http://localhost:5001/pins/assignedpins`, {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/pins/assignedpins`, {
                 params: {
                     user_id: userdata?.id,
                     page: pagination.currentPage,

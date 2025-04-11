@@ -12,7 +12,7 @@ const CardManagement = () => {
 
     const fetchCardDetails = useCallback(async () => {
         try {
-            const response = await axios.get(`http://localhost:5001/cards/details`, {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/cards/details`, {
                 params: {
                     user_id: userdata?.id
                 },
@@ -30,7 +30,7 @@ const CardManagement = () => {
 
     const requestNewCreditCard = async () => {
         try {
-            await axios.post(`http://localhost:5001/cards/request`, {
+            await axios.post(`${import.meta.env.VITE_API_URL}/cards/request`, {
                 user_id: userdata?.user_id
             }, {
                 headers: {

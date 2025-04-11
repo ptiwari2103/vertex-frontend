@@ -34,9 +34,9 @@ const KycForm = () => {
         // console.log("Update KycForm in useEffect");
         const pan_number = userdata.profile.pan_number;
         const aadhar_number = userdata.profile.aadhar_number;
-        const pan_number_image = "http://localhost:5001/"+userdata.profile.pan_number_image;
-        const aadhar_number_image_front = "http://localhost:5001/"+userdata.profile.aadhar_number_image_front;
-        const aadhar_number_image_back = "http://localhost:5001/"+userdata.profile.aadhar_number_image_back;
+        const pan_number_image = `${import.meta.env.VITE_API_URL}/`+userdata.profile.pan_number_image;
+        const aadhar_number_image_front = `${import.meta.env.VITE_API_URL}/`+userdata.profile.aadhar_number_image_front;
+        const aadhar_number_image_back = `${import.meta.env.VITE_API_URL}/`+userdata.profile.aadhar_number_image_back;
         
         // Set kycEdit based on kyc_status
         if(userdata.profile.kyc_status !== "Pending") {
@@ -159,7 +159,7 @@ const KycForm = () => {
                 }
             });
 
-            const response = await axios.post('http://localhost:5001/members/kyc', formDataToSend, {
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/members/kyc`, formDataToSend, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
                     'Content-Type': 'multipart/form-data'
@@ -280,7 +280,7 @@ const KycForm = () => {
                                 accept="image/*"
                                 className="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                             />
-                            {documentPreviews.pan_number_image && documentPreviews.pan_number_image !== 'http://localhost:5001/null' && (
+                            {documentPreviews.pan_number_image && documentPreviews.pan_number_image !== `${import.meta.env.VITE_API_URL}/null` && (
                                 <img src={documentPreviews.pan_number_image} alt="PAN Card Preview" className="mt-2 h-20 object-contain" />
                             )}
                             {errors.pan_number_image && (
@@ -298,7 +298,7 @@ const KycForm = () => {
                                 accept="image/*"
                                 className="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                             />
-                            {documentPreviews.aadhar_number_image_front && documentPreviews.aadhar_number_image_front !== 'http://localhost:5001/null' && (
+                            {documentPreviews.aadhar_number_image_front && documentPreviews.aadhar_number_image_front !== `${import.meta.env.VITE_API_URL}/null` && (
                                 <img src={documentPreviews.aadhar_number_image_front} alt="Aadhar Front Preview" className="mt-2 h-20 object-contain" />
                             )}
                             {errors.aadhar_number_image_front && (
@@ -316,7 +316,7 @@ const KycForm = () => {
                                 accept="image/*"
                                 className="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                             />
-                            {documentPreviews.aadhar_number_image_back && documentPreviews.aadhar_number_image_back !== 'http://localhost:5001/null' && (
+                            {documentPreviews.aadhar_number_image_back && documentPreviews.aadhar_number_image_back !== `${import.meta.env.VITE_API_URL}/null` && (
                                 <img src={documentPreviews.aadhar_number_image_back} alt="Aadhar Back Preview" className="mt-2 h-20 object-contain" />
                             )}
                             {errors.aadhar_number_image_back && (

@@ -13,7 +13,7 @@ const Notification = () => {
         if (!userdata?.id) return;
         
         try {
-            const response = await axios.get(`http://localhost:5001/messages/notification/${userdata.id}`, {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/messages/notification/${userdata.id}`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`
                 }
@@ -36,7 +36,7 @@ const Notification = () => {
     const markAsRead = async (notificationId) => {
         try {
             const response = await axios.post(
-                `http://localhost:5001/messages/mark-as-read`,
+                `${import.meta.env.VITE_API_URL}/messages/mark-as-read`,
                 { 
                     message_user_id: notificationId
                 },
@@ -128,7 +128,7 @@ const Notification = () => {
                                             {notification.image && (
                                                 <div className="mt-3">
                                                     <img 
-                                                        src={`http://localhost:5001/${notification.image}`} 
+                                                        src={`${import.meta.env.VITE_API_URL}/${notification.image}`} 
                                                         alt="Notification" 
                                                         className="max-w-full h-auto rounded"
                                                     />

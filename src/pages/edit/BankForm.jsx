@@ -21,7 +21,7 @@ const BankForm = () => {
     const [showSuccess, setShowSuccess] = useState(false);
     const [successMessages, setSuccessMessages] = useState({ serverresponse: "" });
     const [pageStatus, setPageStatus] = useState(null);
-    const [pageEdit, setPageEdit] = useState(false);
+    const [pageEdit, setPageEdit] = useState(true);
     
     useEffect(() => {
         if (errors.serverError === "Invalid token" || errors.serverError === "Token has expired") {
@@ -56,12 +56,11 @@ const BankForm = () => {
     };
 
     useEffect(() => {
-        if (!userdata?.bank) return;
-
+        //if (!userdata?.bank) return;
         const { bank } = userdata;
         setFormData(prev => ({
             ...prev,
-            account_holder: bank?.account_holder || userdata.name|| '',
+            account_holder: bank?.account_holder || userdata?.name|| '',
             account_number: bank?.account_number || '',
             bank_name: bank?.bank_name || '',
             branch_name: bank?.branch_name || '',
@@ -72,11 +71,8 @@ const BankForm = () => {
         // Set pageEdit based on status
         if(userdata?.bank?.id) {
             setPageEdit(false);
-            setPageStatus("Your Bank Details have been submitted.");
-        } else {
-            setPageEdit(true);
-            setPageStatus("Your Bank Details is pending.");
-        }        
+            setPageStatus("Your Bank details have been submitted.");
+        }      
 
     }, [userdata]);
 
@@ -91,7 +87,7 @@ const BankForm = () => {
         setLoading(true);
 
         try {
-            const response = await axios.post('http://localhost:5001/members/addupdatebank',
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/members/addupdatebank`,
                 {
                     ...formData,
                     user_id: userdata?.user_id

@@ -50,8 +50,8 @@ const ProfileForm = () => {
         if (!userdata?.profile) return;
         
         const { profile } = userdata;
-        const profile_image = profile.profile_image ? "http://localhost:5001/"+profile.profile_image : null;
-        const divyang_certificate = profile.divyang_certificate ? "http://localhost:5001/"+profile.divyang_certificate : null;
+        const profile_image = profile.profile_image ? "${import.meta.env.VITE_API_URL}/"+profile.profile_image : null;
+        const divyang_certificate = profile.divyang_certificate ? "${import.meta.env.VITE_API_URL}/"+profile.divyang_certificate : null;
 
         setFormData(prev => ({
             ...prev,
@@ -224,7 +224,7 @@ const ProfileForm = () => {
 
         try {
             const response = await axios.post(
-                'http://localhost:5001/members/profile',
+                `${import.meta.env.VITE_API_URL}/members/profile`,
                 formDataToSend,
                 {
                     headers: {

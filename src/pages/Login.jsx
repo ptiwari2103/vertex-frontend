@@ -32,7 +32,7 @@ const Login = () => {
 
             const fetchData = async () => {
                 try {
-                    const response = await axios.post("http://localhost:5001/members/prelogin", { "user_id": userId });
+                    const response = await axios.post(`${import.meta.env.VITE_API_URL}/members/prelogin`, { "user_id": userId });
                     console.log('Response:', response.data);
 
                     if(response.data.success){
@@ -95,7 +95,7 @@ const Login = () => {
         try {
             setIsSubmitting(true); // Start loading
             setIsSubmittingLoading(true);
-            const response = await axios.post("http://localhost:5001/members/login", { "user_id":userId, "password":password });
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/members/login`, { "user_id":userId, "password":password });
             console.log(response.data.data);
             login(response.data.data);
             

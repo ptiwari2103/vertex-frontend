@@ -25,7 +25,7 @@ const AddressForm = () => {
     const [showSuccess, setShowSuccess] = useState(false);
     const [successMessages, setSuccessMessages] = useState({ serverresponse: "" });
     const [pageStatus, setPageStatus] = useState(null);
-    const [pageEdit, setPageEdit] = useState(false); // Initialize as false by default
+    const [pageEdit, setPageEdit] = useState(true); // Initialize as false by default
 
     useEffect(() => {
         if (errors.serverError === "Invalid token" || errors.serverError === "Token has expired") {
@@ -71,8 +71,7 @@ const AddressForm = () => {
     };
 
     useEffect(() => {
-        if (!userdata?.address) return;
-
+        //if (!userdata?.address) return;
         const { address } = userdata;
         setFormData(prev => ({
             ...prev,
@@ -94,10 +93,7 @@ const AddressForm = () => {
         if(userdata?.address?.id) {
             setPageEdit(false);
             setPageStatus("Your Address have been submitted.");
-        } else {
-            setPageEdit(true);
-            setPageStatus("Your Address is pending.");
-        }        
+        }     
         
 
     }, [userdata]);
@@ -112,7 +108,7 @@ const AddressForm = () => {
         setLoading(true);
 
         try {
-            const response = await axios.post('http://localhost:5001/members/addupdateaddress',
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/members/addupdateaddress`,
                 {
                     ...formData,
                     user_id: userdata?.user_id

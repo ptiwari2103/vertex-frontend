@@ -1,10 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import PropTypes from 'prop-types';
 import { termsAndConditions } from '../data/termsAndConditions';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../contexts/authContext';
 
 const Register = () => {
+    const { userdata } = useContext(AuthContext);
+    const navigate = useNavigate();
+
     const [formData, setFormData] = useState({
         name: "",
         password: "",
@@ -65,7 +69,7 @@ const Register = () => {
                 setIsValidatingKey(true);
                 setPaymentKeyError('');
                 try {
-                    const response = await axios.post('http://localhost:5001/auth/validate-payment-key', {
+                    const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/validate-payment-key`, {
                         payment_key: formData.pay_key
                     });
                     if (response.data.success === true) {
@@ -91,7 +95,7 @@ const Register = () => {
 
     // Fetch states from master table (Mock API)
     useEffect(() => {
-        axios.get("http://localhost:5001/locations/states")  // Adjust API URL
+        axios.get(`${import.meta.env.VITE_API_URL}/locations/states`)  // Adjust API URL
             .then(response => setStates(response.data))
             .catch(error => console.error("Error fetching states", error));
     }, []);
@@ -99,7 +103,7 @@ const Register = () => {
     // Fetch districts when state changes
     useEffect(() => {
         if (formData.state_id) {
-            axios.get(`http://localhost:5001/locations/districts?stateId=${formData.state_id}`)  // Changed to use stateId
+            axios.get(`${import.meta.env.VITE_API_URL}/locations/districts?stateId=${formData.state_id}`)  // Changed to use stateId
                 .then(response => setDistricts(response.data))
                 .catch(error => console.error("Error fetching districts", error));
         } else {
@@ -374,7 +378,12 @@ const Register = () => {
             // };
             console.log(formData);
             
-            const response = await axios.post("http://localhost:5001/members/register", formData);
+            const submissionData = {
+                ...formData,
+                parent_id: userdata?.id || null
+            };
+
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/members/register`, submissionData);
             console.log(response.data);
             setUserDetails(response.data);
             // Clear form data after successful registration
@@ -406,9 +415,24 @@ const Register = () => {
                 terms_accepted: "",
                 servererror: ""
             });
-            setShowTermsModal(false);
-            setShowPopup(true);
+            setShowTermsModal(false);            
             setShowError(false);
+            // Debug the response structure
+            console.log('Full response structure:', response.data);
+            
+            // Check for parent_id in different possible locations in the response
+            if(response.data.user && response.data.user.parent_id) {
+                console.log('Parent ID found in user object:', response.data.user.parent_id);
+                // Redirect to agent page when parent_id is present
+                navigate('/agent');
+            } else if(response.data.parent_id) {
+                console.log('Parent ID found in root:', response.data.parent_id);
+                // Redirect to agent page when parent_id is present
+                navigate('/agent');
+            } else {
+                console.log('No parent ID found in response');
+                setShowPopup(true);
+            }
         } catch (err) {
             console.log("Server Error: ");
             console.log(err.response.data);
@@ -492,6 +516,7 @@ const Register = () => {
                 <h2 className="text-4xl font-bold mb-10 text-center text-gray-800">Registration Form</h2>
 
                 <form onSubmit={handleSubmit} className="space-y-8">
+                    <input type="text" name="parent_id" value={userdata?.id || ''} />
                     <div className="grid grid-cols-2 gap-x-12 gap-y-8">
                         {/* Name */}
                         <div>
@@ -870,3 +895,4 @@ const Register = () => {
 };
 
 export default Register;
+
