@@ -3,11 +3,12 @@ import { AuthContext } from '../contexts/authContext';
 import axios from 'axios';
 
 const Agent = () => {
-    const { userdata } = useContext(AuthContext);
+    const { userdata, updateuserdata, updateagentmembercount } = useContext(AuthContext);
     const [isAgent, setIsAgent] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
+    const [agentMembers, setAgentMembers] = useState([]);
 
     // Check if user is already an agent
     useEffect(() => {
@@ -15,6 +16,38 @@ const Agent = () => {
             setIsAgent(true);
         }
     }, [userdata?.agent?.id]);
+
+    useEffect(() => {
+        if(userdata?.id){
+            const fetchAgentlist = async () => {
+                try {
+                    const response = await axios.get(
+                        `${import.meta.env.VITE_API_URL}/members/${userdata?.id}/agent-members`,
+                        {
+                            headers: {
+                            Authorization: `Bearer ${localStorage.getItem('token')}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+                
+                if (response.data.success) {
+                    //console.log(response);
+                    setAgentMembers(response.data.data);
+                    updateagentmembercount(response.data.data.length)
+                } else {
+                    setError(response.data.message || 'Failed to submit agent request. Please try again.');
+                }
+            } catch (error) {
+                setError(error.response?.data?.message || 'An error occurred. Please try again.');
+                console.error('Error requesting agent status:', error);
+            } finally {
+                setLoading(false);
+            }
+            };
+            fetchAgentlist();
+        }
+    }, [userdata?.id, updateagentmembercount]);
 
     const handleRequestAgent = async () => {
         setLoading(true);
@@ -35,6 +68,7 @@ const Agent = () => {
             
             if (response.data.success) {
                 setSuccessMessage('Your agent request has been submitted successfully!');
+                updateuserdata(response.data.data);
                 setIsAgent(true);
             } else {
                 setError(response.data.message || 'Failed to submit agent request. Please try again.');
@@ -79,15 +113,32 @@ const Agent = () => {
                     </div>
                 ) : (
                     <div className="mb-6">
-                        <p className="text-gray-600 mb-4">
-                            You are now an agent. You can add new members to the platform.
-                        </p>
-                        <button
-                            onClick={() => window.location.href = '/register'}
-                            className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out"
-                        >
-                            Add Member
-                        </button>
+                        {(userdata.agent.status === "Approved" && userdata.profile.is_agent === "Active") || 
+                         (userdata.agent.status === "Pending") ? (
+                            <>
+                                <p className="text-gray-600 mb-4">
+                                    You are now an agent. You can add new members to the platform.
+                                </p>
+                                <button
+                                    onClick={() => window.location.href = '/register'}
+                                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out"
+                                >
+                                    Add Member
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <p className="text-gray-600 mb-4">
+                                Your agent account is deactivated. Please contact support.
+                                </p>
+                                <button
+                                    disabled
+                                    className="bg-gray-400 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out opacity-50 cursor-not-allowed"
+                                >
+                                    Add Member
+                                </button>
+                            </>
+                        )}
                     </div>
                 )}
                 
@@ -95,7 +146,7 @@ const Agent = () => {
                     <div className="mt-8">
                         <h2 className="text-xl font-semibold text-gray-800 mb-4">Your Members</h2>
                         
-                        {userdata?.agentmembers && userdata.agentmembers.length > 0 ? (
+                        {agentMembers.length > 0 ? (
                             <div className="overflow-x-auto">
                                 <table className="min-w-full bg-white border border-gray-200">
                                     <thead className="bg-gray-50">
@@ -108,8 +159,11 @@ const Agent = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200">
-                                        {userdata.agentmembers.map((member, index) => (
-                                            <tr key={index} className="hover:bg-gray-50">
+                                        {agentMembers.map((member, index) => (
+                                            <tr 
+                                                key={index} 
+                                                className={`hover:bg-gray-50 ${index < import.meta.env.VITE_AGENT_WORKING_MEMBER_START ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                            >
                                                 <td className="py-3 px-4 text-sm text-gray-900">{member.name}</td>
                                                 <td className="py-3 px-4 text-sm text-gray-900">{member.user_id}</td>
                                                 <td className="py-3 px-4 text-sm text-gray-900">{member.email_id}</td>

@@ -18,6 +18,8 @@ export const AuthProvider = ({ children }) => {
 
     const [unreadCount, setUnreadCount] = useState(0);
 
+    const [agentmembercount, setAgentmembercount] = useState(0);
+
     const getnotification = async () =>{
         return unreadCount;
     }
@@ -33,6 +35,7 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem("userdata", JSON.stringify(data.user));
             setIsAuthenticated(true);
             setUserdata(data.user);
+            setAgentmembercount(data.user.agentmembercount || 0);
         } catch (error) {
             console.error("Error in login:", error);
         }
@@ -44,13 +47,21 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem("userdata");
         setIsAuthenticated(false);        
         setUserdata({});
+        setAgentmembercount(0);
     };
 
     const updateuserdata = (data) => {
         localStorage.setItem("userdata", JSON.stringify(data));        
         setUserdata(data);
+        setAgentmembercount(data.agentmembercount || 0);
     };
 
+    const getagentmembercount = () => {
+        return agentmembercount;
+    }
+    const updateagentmembercount = (count) => {
+        setAgentmembercount(count);
+    }
 
     useEffect(() => {
         try {
@@ -81,7 +92,7 @@ export const AuthProvider = ({ children }) => {
     
 
     return (
-        <AuthContext.Provider value={{ login, logout, isAuthenticated, userdata, updateuserdata, getnotification, setnotification }}>
+        <AuthContext.Provider value={{ login, logout, isAuthenticated, userdata, updateuserdata, getnotification, setnotification, getagentmembercount, updateagentmembercount }}>
             {children}
         </AuthContext.Provider>
     );

@@ -2,12 +2,12 @@ import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import PropTypes from 'prop-types';
 import { termsAndConditions } from '../data/termsAndConditions';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/authContext';
 
 const Register = () => {
-    const { userdata,isAuthenticated } = useContext(AuthContext);
-    //const navigate = useNavigate();
+    const { userdata } = useContext(AuthContext);
+    const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
         name: "",
@@ -80,7 +80,6 @@ const Register = () => {
                         setPaymentKeyError('Your payment key is incorrect');
                     }
                 } catch (error) {
-                    console.error('Error validating payment key:', error);  
                     setIsPaymentKeyValid(false);
                     setPaymentKeyError('Error validating payment key. Please try again.');
                 }
@@ -419,23 +418,21 @@ const Register = () => {
             setShowTermsModal(false);            
             setShowError(false);
             // Debug the response structure
-            // console.log('Full response structure:', response.data);
+            console.log('Full response structure:', response.data);
             
             // Check for parent_id in different possible locations in the response
-            // if(response.data.user && response.data.user.parent_id) {
-            //     console.log('Parent ID found in user object:', response.data.user.parent_id);
-            //     // Redirect to agent page when parent_id is present
-            //     navigate('/agent');
-            // } else if(response.data.parent_id) {
-            //     console.log('Parent ID found in root:', response.data.parent_id);
-            //     // Redirect to agent page when parent_id is present
-            //     navigate('/agent');
-            // } else {
-            //     console.log('No parent ID found in response');
-            //     setShowPopup(true);
-            // }
-
-            setShowPopup(true);
+            if(response.data.user && response.data.user.parent_id) {
+                console.log('Parent ID found in user object:', response.data.user.parent_id);
+                // Redirect to agent page when parent_id is present
+                navigate('/agent');
+            } else if(response.data.parent_id) {
+                console.log('Parent ID found in root:', response.data.parent_id);
+                // Redirect to agent page when parent_id is present
+                navigate('/agent');
+            } else {
+                console.log('No parent ID found in response');
+                setShowPopup(true);
+            }
         } catch (err) {
             console.log("Server Error: ");
             console.log(err.response.data);
@@ -519,7 +516,7 @@ const Register = () => {
                 <h2 className="text-4xl font-bold mb-10 text-center text-gray-800">Registration Form</h2>
 
                 <form onSubmit={handleSubmit} className="space-y-8">
-                    <input type="hidden" name="parent_id" value={userdata?.id || ''} />
+                    <input type="text" name="parent_id" value={userdata?.id || ''} />
                     <div className="grid grid-cols-2 gap-x-12 gap-y-8">
                         {/* Name */}
                         <div>
@@ -882,23 +879,12 @@ const Register = () => {
                             </div>
                         </div>
                         <div className="text-center">
-                            
-                        {isAuthenticated ? (
-                        <Link 
-                            to="/agent" 
-                            className="bg-blue-600 text-white px-10 py-3 rounded-lg hover:bg-blue-700 transition-all duration-300 font-medium hover:shadow-lg transform hover:-translate-y-0.5 inline-block"
-                        >
-                            Back to Agent
-                        </Link>
-                        ):(
-
                             <Link 
                                 to="/login" 
                                 className="bg-blue-600 text-white px-10 py-3 rounded-lg hover:bg-blue-700 transition-all duration-300 font-medium hover:shadow-lg transform hover:-translate-y-0.5 inline-block"
                             >
                                 Login
                             </Link>
-                        )}
                         </div>
                     </div>
                 </div>
