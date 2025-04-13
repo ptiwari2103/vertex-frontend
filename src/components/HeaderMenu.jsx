@@ -40,7 +40,7 @@ const HeaderMenu = () => {
             if (!userdata?.id) return;
             
             try {
-                const response = await axios.get(`http://localhost:5001/messages/unread-count/${userdata.id}`, {
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/messages/unread-count/${userdata.id}`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("token")}`
                     }

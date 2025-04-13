@@ -17,6 +17,7 @@ import CardManagement from "./pages/CardManagement";
 import Agent from "./pages/Agent";
 import Franchise from "./pages/Franchise";
 import Notification from "./pages/Notification";
+import SessionTimeout from "./components/SessionTimeout";
 
 function App() {
     return (
@@ -77,6 +78,8 @@ function App() {
                         <Route path="*" element={<NotFound />} />
                     </Route>
                 </Routes>
+                {/* Session timeout component */}
+                <SessionTimeout timeoutMinutes={1} />
             </Router>
         </AuthProvider>
     );
