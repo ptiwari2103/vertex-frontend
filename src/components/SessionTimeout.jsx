@@ -1,9 +1,11 @@
 import { useEffect, useCallback, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/authContext';
 import PropTypes from 'prop-types';
 
-const SessionTimeout = ({ timeoutMinutes = 1 }) => {
+const SessionTimeout = ({ timeoutMinutes = 5 }) => {
     const { logout } = useContext(AuthContext);
+    const navigate = useNavigate();
     
     // Convert minutes to milliseconds
     const timeoutDuration = timeoutMinutes * 60 * 1000;
@@ -11,6 +13,7 @@ const SessionTimeout = ({ timeoutMinutes = 1 }) => {
     // Function to handle user activity
     const handleUserActivity = useCallback(() => {
         // Update the last activity timestamp in localStorage
+        console.log('lastActivityTime=', Date.now().toString());
         localStorage.setItem('lastActivityTime', Date.now().toString());
     }, []);
     
@@ -22,18 +25,25 @@ const SessionTimeout = ({ timeoutMinutes = 1 }) => {
         
         // If inactive for too long, log out
         if (inactiveTime > timeoutDuration && localStorage.getItem('token')) {
+            
+            const sessionExpired = localStorage.getItem('sessionExpired');
+            console.log('sessionExpired1=', sessionExpired);
+
             console.log(`Session timeout: Inactive for ${inactiveTime / 1000} seconds`);
             
-            // Set session expired flag in localStorage
+            // First set session expired flag in localStorage
             localStorage.setItem('sessionExpired', 'true');
             
+            const sessionExpired2 = localStorage.getItem('sessionExpired');
+            console.log('sessionExpired2=', sessionExpired2);
+
             // Perform logout
             logout();
             
-            // Redirect to login page using window.location
-            window.location.href = '/login';
+            // Navigate to login page
+            navigate('/login');
         }
-    }, [logout, timeoutDuration]);
+    }, [logout, navigate, timeoutDuration]);
     
     // Set up activity tracking and inactivity checking
     useEffect(() => {
@@ -58,7 +68,7 @@ const SessionTimeout = ({ timeoutMinutes = 1 }) => {
         });
         
         // Set up interval to check for inactivity
-        const intervalId = setInterval(checkForInactivity, 10000); // Check every 10 seconds
+        const intervalId = setInterval(checkForInactivity, 60000); // Check every 60 seconds
         
         // Clean up
         return () => {

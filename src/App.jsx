@@ -79,7 +79,7 @@ function App() {
                     </Route>
                 </Routes>
                 {/* Session timeout component */}
-                <SessionTimeout timeoutMinutes={1} />
+                <SessionTimeout timeoutMinutes={5} />
             </Router>
         </AuthProvider>
     );

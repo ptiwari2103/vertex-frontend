@@ -18,20 +18,20 @@ const Login = () => {
 
     // Check if session expired on component mount
     useEffect(() => {
-        // Check for session expiration flag in localStorage
-        const hasSessionExpired = localStorage.getItem('sessionExpired') === 'true';
+        // Get the session expired flag immediately when component mounts
+        const sessionExpiredValue = localStorage.getItem('sessionExpired');
+        console.log('Login page loaded, sessionExpired=', sessionExpiredValue);
         
-        if (hasSessionExpired) {
+        // Check for session expiration flag in localStorage
+        if (sessionExpiredValue === 'true') {
             console.log('Session expired flag detected in localStorage');
+            
+            // Set state to show the expired message
             setSessionExpired(true);
-            setShowError(true);
-            setErrors(prev => ({
-                ...prev,
-                servererror: "Your session has expired due to inactivity. Please log in again."
-            }));
             
             // Clear the session expired flag
             localStorage.removeItem('sessionExpired');
+            console.log('Session expired flag cleared from localStorage');
         }
     }, []);
 
@@ -41,7 +41,6 @@ const Login = () => {
             // Only clear session expired message if user is actively typing a user ID
             if (sessionExpired) {
                 setSessionExpired(false);
-                setShowError(false);
             }
             
             setIsSubmitting(false);
@@ -163,8 +162,16 @@ const Login = () => {
             <div className="bg-white p-8 rounded-lg shadow-lg w-[800px] mb-8">
                 <h2 className="text-2xl font-semibold text-center text-gray-700 mb-6">Login</h2>
 
-                {showError && (
-                    <div className={`border-l-4 p-4 w-full ${sessionExpired ? 'bg-red-100 border-red-600 text-red-600 font-bold' : 'bg-red-100 border-red-500 text-red-700'}`} role="alert">
+                {/* Session expired message - always show if sessionExpired is true */}
+                {sessionExpired && (
+                    <div className="bg-red-100 border-l-4 border-red-600 text-red-700 font-bold p-4 w-full mb-4" role="alert">
+                        Your session has expired due to inactivity. Please log in again.
+                    </div>
+                )}
+
+                {/* Regular error messages */}
+                {showError && !sessionExpired && (
+                    <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 w-full mb-4" role="alert">
                         {Object.keys(errors).map((key) => (
                             errors[key] && <li key={key}>{errors[key]}</li>
                         ))}
@@ -172,7 +179,7 @@ const Login = () => {
                 )}
 
                 {showSuccess && (
-                    <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 w-full" role="alert">
+                    <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 w-full mb-4" role="alert">
                         {Object.keys(successMessages).map((key) => (
                             successMessages[key] && <li key={key}>{successMessages[key]}</li>
                         ))}
@@ -226,9 +233,7 @@ const Login = () => {
                                     </svg>
                                     Processing...
                                 </>
-                            ) : (
-                                'Login'
-                            )}
+                            ) : 'Login'}
                         </button>
                     </div>
 

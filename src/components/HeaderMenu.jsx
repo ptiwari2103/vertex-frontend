@@ -25,7 +25,7 @@ const HeaderMenu = () => {
         navigate('/');
     };
 
-    console.log("Auth Context in HeaderMenu:", userdata, isAuthenticated, localStorage.getItem("token"));
+    //console.log("Auth Context in HeaderMenu:", userdata, isAuthenticated, localStorage.getItem("token"));
 
     useEffect(() => {
         if(!userdata.id && isAuthenticated) {
@@ -46,7 +46,7 @@ const HeaderMenu = () => {
                     }
                 });
                 
-                console.log("Unread count response:", response.data);
+                //console.log("Unread count response:", response.data);
                 
                 if (response.data?.success && response.data?.data?.count !== undefined) {
                     // Only update the count in AuthContext
@@ -65,7 +65,7 @@ const HeaderMenu = () => {
 
     const profileImageUrl = userdata?.profile?.profile_image ? `http://localhost:5001/${userdata.profile.profile_image}` : null;
     
-    console.log("Total notification count:", totalNotification);
+    //console.log("Total notification count:", totalNotification);
 
     return (
         <nav className="bg-blue-500 p-3 text-white w-full flex justify-between items-center">
