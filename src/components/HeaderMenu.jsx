@@ -25,7 +25,7 @@ const HeaderMenu = () => {
         navigate('/');
     };
 
-    console.log("Auth Context in HeaderMenu:", userdata, isAuthenticated, localStorage.getItem("token"));
+    //console.log("Auth Context in HeaderMenu:", userdata, isAuthenticated, localStorage.getItem("token"));
 
     useEffect(() => {
         if(!userdata.id && isAuthenticated) {
@@ -40,13 +40,13 @@ const HeaderMenu = () => {
             if (!userdata?.id) return;
             
             try {
-                const response = await axios.get(`http://localhost:5001/messages/unread-count/${userdata.id}`, {
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/messages/unread-count/${userdata.id}`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("token")}`
                     }
                 });
                 
-                console.log("Unread count response:", response.data);
+                //console.log("Unread count response:", response.data);
                 
                 if (response.data?.success && response.data?.data?.count !== undefined) {
                     setTotalNotification(response.data.data.count);
@@ -67,6 +67,7 @@ const HeaderMenu = () => {
         return () => clearInterval(intervalId);
     }, [userdata, setnotification]);
     
+
     // Listen for custom notification events
     useEffect(() => {
         const handleNotificationUpdate = () => {

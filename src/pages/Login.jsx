@@ -13,10 +13,36 @@ const Login = () => {
     const [isSubmittingLoading, setIsSubmittingLoading] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [successMessages, setSuccessMessages] = useState({serverresponse: ""});
+    const [sessionExpired, setSessionExpired] = useState(false);
     const navigate = useNavigate();
 
+    // Check if session expired on component mount
+    useEffect(() => {
+        // Get the session expired flag immediately when component mounts
+        const sessionExpiredValue = localStorage.getItem('sessionExpired');
+        console.log('Login page loaded, sessionExpired=', sessionExpiredValue);
+        
+        // Check for session expiration flag in localStorage
+        if (sessionExpiredValue === 'true') {
+            console.log('Session expired flag detected in localStorage');
+            
+            // Set state to show the expired message
+            setSessionExpired(true);
+            
+            // Clear the session expired flag
+            localStorage.removeItem('sessionExpired');
+            console.log('Session expired flag cleared from localStorage');
+        }
+    }, []);
+
+    // Handle user ID changes
     useEffect(() => {
         if (userId && userId.length === 6) {
+            // Only clear session expired message if user is actively typing a user ID
+            if (sessionExpired) {
+                setSessionExpired(false);
+            }
+            
             setIsSubmitting(false);
             setIsSubmittingLoading(false);
             setShowError(false);
@@ -63,29 +89,26 @@ const Login = () => {
             };
     
             fetchData(); // Invoke the function
-        }else{
-            setIsSubmitting(false);
-            setIsSubmittingLoading(false);
-            setShowError(false);
-            setErrors(prev => ({
-                ...prev,
-                servererror: ""
-            }));
-            setShowSuccess(false);
-            setSuccessMessages(prev => ({
-                ...prev,
-                serverresponse: ""
-            }));
+        } else {
+            // Don't clear error if it's a session expired message
+            if (!sessionExpired) {
+                setIsSubmitting(false);
+                setIsSubmittingLoading(false);
+                setShowError(false);
+                setErrors(prev => ({
+                    ...prev,
+                    servererror: ""
+                }));
+                setShowSuccess(false);
+                setSuccessMessages(prev => ({
+                    ...prev,
+                    serverresponse: ""
+                }));
+            }
         }
-    }, [userId]);
-
-
+    }, [userId, sessionExpired]);
 
     // If user is already authenticated, redirect to dashboard
-    // console.log("login page isAuthenticated: ", isAuthenticated);
-    // console.log("login page auth: ", auth);
-    // console.log("login page auth2: ", auth.user_id);
-
     if (isAuthenticated) {
         return <Navigate to="/dashboard" replace />;
     }
@@ -122,7 +145,6 @@ const Login = () => {
                     servererror: errorMessage
                 }));
             } else {
-                //alert("Login failed: Please try again");
                 setShowError(true);
                 setErrors(prev => ({
                     ...prev,
@@ -140,8 +162,16 @@ const Login = () => {
             <div className="bg-white p-8 rounded-lg shadow-lg w-[800px] mb-8">
                 <h2 className="text-2xl font-semibold text-center text-gray-700 mb-6">Login</h2>
 
-                {showError && (
-                    <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 w-full" role="alert">
+                {/* Session expired message - always show if sessionExpired is true */}
+                {sessionExpired && (
+                    <div className="bg-red-100 border-l-4 border-red-600 text-red-700 font-bold p-4 w-full mb-4" role="alert">
+                        Your session has expired due to inactivity. Please log in again.
+                    </div>
+                )}
+
+                {/* Regular error messages */}
+                {showError && !sessionExpired && (
+                    <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 w-full mb-4" role="alert">
                         {Object.keys(errors).map((key) => (
                             errors[key] && <li key={key}>{errors[key]}</li>
                         ))}
@@ -149,7 +179,7 @@ const Login = () => {
                 )}
 
                 {showSuccess && (
-                    <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 w-full" role="alert">
+                    <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 w-full mb-4" role="alert">
                         {Object.keys(successMessages).map((key) => (
                             successMessages[key] && <li key={key}>{successMessages[key]}</li>
                         ))}
@@ -185,8 +215,6 @@ const Login = () => {
                         />
                     </div>
 
-                    
-
                     <div className="flex justify-center mt-10">
                         <button 
                             type="submit" 
@@ -205,18 +233,9 @@ const Login = () => {
                                     </svg>
                                     Processing...
                                 </>
-                            ) : (
-                                'Login'
-                            )}
+                            ) : 'Login'}
                         </button>
                     </div>
-
-                    {/* <button
-                        type="submit"
-                        className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition mt-4"
-                    >
-                        Login
-                    </button> */}
 
                     <div className="text-center text-sm text-gray-600 mt-6">
                         {/* <a href="#" className="hover:underline">Forgot Password?</a> | */}
