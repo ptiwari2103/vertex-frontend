@@ -49,23 +49,46 @@ const HeaderMenu = () => {
                 console.log("Unread count response:", response.data);
                 
                 if (response.data?.success && response.data?.data?.count !== undefined) {
-                    // Only update the count in AuthContext
+                    setTotalNotification(response.data.data.count);
                     setnotification(response.data.data.count);
-                    // totalNotification will be updated via the dedicated useEffect with getnotification
                 }
             } catch (error) {
-                console.error("Error fetching unread notification count:", error);
+                console.error("Error fetching unread count:", error);
             }
         };
-
+        
+        // Initial fetch
         fetchUnreadCount();
         
+        // Set up interval to fetch every 30 seconds
+        const intervalId = setInterval(fetchUnreadCount, 30000);
         
-    }, [userdata?.id, setnotification]);
-
-    const profileImageUrl = userdata?.profile?.profile_image ? `http://localhost:5001/${userdata.profile.profile_image}` : null;
+        // Clean up interval on component unmount
+        return () => clearInterval(intervalId);
+    }, [userdata, setnotification]);
     
-    console.log("Total notification count:", totalNotification);
+    // Listen for custom notification events
+    useEffect(() => {
+        const handleNotificationUpdate = () => {
+            // Fetch updated notification count
+            getnotification().then(count => {
+                setTotalNotification(count);
+            });
+        };
+        
+        // Add event listener
+        window.addEventListener('notification-read', handleNotificationUpdate);
+        
+        // Clean up
+        return () => {
+            window.removeEventListener('notification-read', handleNotificationUpdate);
+        };
+    }, [getnotification]);
+    
+    // Get profile image URL
+    const profileImageUrl = userdata?.profile?.profile_image 
+        ? `${import.meta.env.VITE_API_URL}/${userdata.profile.profile_image}` 
+        : null;
 
     return (
         <nav className="bg-blue-500 p-3 text-white w-full flex justify-between items-center">
@@ -83,7 +106,11 @@ const HeaderMenu = () => {
                             <li><NavLink to="/franchise" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Franchise</NavLink></li>   
                         )}
                         
-                        <li><NavLink to="/agent" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Agent</NavLink></li> 
+                        {userdata?.is_edit === "Approved" ? (
+                            <li><NavLink to="/agent" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Agent</NavLink></li>
+                        ) : (
+                            <li><span className="text-gray-400 cursor-not-allowed" title="Requires approval">Agent</span></li>
+                        )}
                         
                         <li className="relative">
                             <NavLink to="/notification" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>

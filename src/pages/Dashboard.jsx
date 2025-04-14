@@ -36,7 +36,7 @@ function Dashboard() {
                 </div>
             )}
 
-            {userdata.agent.status==="Approved" && (
+            {userdata?.agent?.status==="Approved" && (
                 <div className="w-full max-w-6xl mb-6 px-4">
                     <h3 className="font-bold text-2xl mb-4 text-gray-800">Agent Status</h3>
                     <div className="space-y-4">
