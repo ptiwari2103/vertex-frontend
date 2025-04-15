@@ -53,6 +53,13 @@ function Dashboard() {
                                         ? "You are an active agent. You can add new members to the platform and earn commissions." 
                                         : "Your agent account is deactivated. Please contact support for assistance."}
                                 </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <div className="bg-white border-l-4 border-blue-500 rounded-lg shadow-md overflow-hidden">
+                            <div className="p-4">
                                 <div className="flex items-center justify-between mt-2">
                                     <div className="bg-gray-100 text-gray-800 px-4 py-2 rounded-md">
                                         Working Members: <span className="font-semibold">{getagentmembercount()}</span>

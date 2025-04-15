@@ -9,13 +9,13 @@ const AddressForm = () => {
     const [formData, setFormData] = useState({
         permanent_address: '',
         permanent_city: '',
-        permanent_state: '',
-        permanent_district: '',
+        permanent_state_id: '',
+        permanent_district_id: '',
         permanent_pincode: '',
         correspondence_address: '',
         correspondence_city: '',
-        correspondence_state: '',
-        correspondence_district: '',
+        correspondence_state_id: '',
+        correspondence_district_id: '',
         correspondence_pincode: '',
         is_same_address: false,
     });
@@ -26,6 +26,11 @@ const AddressForm = () => {
     const [successMessages, setSuccessMessages] = useState({ serverresponse: "" });
     const [pageStatus, setPageStatus] = useState(null);
     const [pageEdit, setPageEdit] = useState(true); // Initialize as false by default
+    
+    // Add states for dropdown options
+    const [states, setStates] = useState([]);
+    const [permanentDistricts, setPermanentDistricts] = useState([]);
+    const [correspondenceDistricts, setCorrespondenceDistricts] = useState([]);
 
     useEffect(() => {
         if (errors.serverError === "Invalid token" || errors.serverError === "Token has expired") {
@@ -33,6 +38,35 @@ const AddressForm = () => {
             navigate('/');
         }
     }, [errors.serverError, logout, navigate]);
+
+    // Fetch states from API
+    useEffect(() => {
+        axios.get(`${import.meta.env.VITE_API_URL}/locations/states`)
+            .then(response => setStates(response.data))
+            .catch(error => console.error("Error fetching states", error));
+    }, []);
+
+    // Fetch permanent districts when permanent state changes
+    useEffect(() => {
+        if (formData.permanent_state_id) {
+            axios.get(`${import.meta.env.VITE_API_URL}/locations/districts?stateId=${formData.permanent_state_id}`)
+                .then(response => setPermanentDistricts(response.data))
+                .catch(error => console.error("Error fetching permanent districts", error));
+        } else {
+            setPermanentDistricts([]);
+        }
+    }, [formData.permanent_state_id]);
+
+    // Fetch correspondence districts when correspondence state changes
+    useEffect(() => {
+        if (formData.correspondence_state_id && !formData.is_same_address) {
+            axios.get(`${import.meta.env.VITE_API_URL}/locations/districts?stateId=${formData.correspondence_state_id}`)
+                .then(response => setCorrespondenceDistricts(response.data))
+                .catch(error => console.error("Error fetching correspondence districts", error));
+        } else {
+            setCorrespondenceDistricts([]);
+        }
+    }, [formData.correspondence_state_id, formData.is_same_address]);
 
     const validateForm = () => {
         const newErrors = {};
@@ -43,6 +77,23 @@ const AddressForm = () => {
 
         if (!formData.is_same_address && !/^[0-9]{6}$/.test(formData.correspondence_pincode)) {
             newErrors.correspondence_pincode = 'Invalid pincode format (6 digits)';
+        }
+
+        if (!formData.permanent_state_id) {
+            newErrors.permanent_state_id = 'Please select a state';
+        }
+
+        if (!formData.permanent_district_id) {
+            newErrors.permanent_district_id = 'Please select a district';
+        }
+
+        if (!formData.is_same_address) {
+            if (!formData.correspondence_state_id) {
+                newErrors.correspondence_state_id = 'Please select a state';
+            }
+            if (!formData.correspondence_district_id) {
+                newErrors.correspondence_district_id = 'Please select a district';
+            }
         }
 
         setErrors(newErrors);
@@ -63,9 +114,17 @@ const AddressForm = () => {
                 ...prev,
                 correspondence_address: prev.permanent_address,
                 correspondence_city: prev.permanent_city,
-                correspondence_state: prev.permanent_state,
-                correspondence_district: prev.permanent_district,
+                correspondence_state_id: prev.permanent_state_id,
+                correspondence_district_id: prev.permanent_district_id,
                 correspondence_pincode: prev.permanent_pincode
+            }));
+        }
+
+        // Clear errors when field is changed
+        if (errors[name]) {
+            setErrors(prev => ({
+                ...prev,
+                [name]: ''
             }));
         }
     };
@@ -73,21 +132,34 @@ const AddressForm = () => {
     useEffect(() => {
         //if (!userdata?.address) return;
         const { address } = userdata;
+        
+        // First load the states
+        if (address?.permanent_state_id) {
+            axios.get(`${import.meta.env.VITE_API_URL}/locations/districts?stateId=${address.permanent_state_id}`)
+                .then(response => setPermanentDistricts(response.data))
+                .catch(error => console.error("Error fetching permanent districts", error));
+        }
+        
+        if (address?.correspondence_state_id && !address?.is_same_address) {
+            axios.get(`${import.meta.env.VITE_API_URL}/locations/districts?stateId=${address.correspondence_state_id}`)
+                .then(response => setCorrespondenceDistricts(response.data))
+                .catch(error => console.error("Error fetching correspondence districts", error));
+        }
+        
         setFormData(prev => ({
             ...prev,
             permanent_address: address?.permanent_address || '',
             permanent_city: address?.permanent_city || '',
-            permanent_state: address?.permanent_state || '',
-            permanent_district: address?.permanent_district || '',
+            permanent_state_id: address?.permanent_state_id || '',
+            permanent_district_id: address?.permanent_district_id || '',
             permanent_pincode: address?.permanent_pincode || '',
             correspondence_address: address?.correspondence_address || '',
             correspondence_city: address?.correspondence_city || '',
-            correspondence_state: address?.correspondence_state || '',
-            correspondence_district: address?.correspondence_district || '',
+            correspondence_state_id: address?.correspondence_state_id || '',
+            correspondence_district_id: address?.correspondence_district_id || '',
             correspondence_pincode: address?.correspondence_pincode || '',
             is_same_address: address?.is_same_address || false
         }));
-
 
         // Set pageEdit based on status
         if(userdata?.address?.id) {
@@ -95,7 +167,6 @@ const AddressForm = () => {
             setPageStatus("Your Address have been submitted.");
         }     
         
-
     }, [userdata]);
 
     const handleSubmit = async (e) => {
@@ -108,11 +179,32 @@ const AddressForm = () => {
         setLoading(true);
 
         try {
+            // Get state and district names from IDs for submission
+            const permanentState = states.find(state => state.id === formData.permanent_state_id)?.name || '';
+            const permanentDistrict = permanentDistricts.find(district => district.id === formData.permanent_district_id)?.name || '';
+            
+            let correspondenceState = '';
+            let correspondenceDistrict = '';
+            
+            if (formData.is_same_address) {
+                correspondenceState = permanentState;
+                correspondenceDistrict = permanentDistrict;
+            } else {
+                correspondenceState = states.find(state => state.id === formData.correspondence_state_id)?.name || '';
+                correspondenceDistrict = correspondenceDistricts.find(district => district.id === formData.correspondence_district_id)?.name || '';
+            }
+            
+            const dataToSubmit = {
+                ...formData,
+                permanent_state: permanentState,
+                permanent_district: permanentDistrict,
+                correspondence_state: correspondenceState,
+                correspondence_district: correspondenceDistrict,
+                user_id: userdata?.user_id
+            };
+            
             const response = await axios.post(`${import.meta.env.VITE_API_URL}/members/addupdateaddress`,
-                {
-                    ...formData,
-                    user_id: userdata?.user_id
-                },
+                dataToSubmit,
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("token")}`
@@ -155,13 +247,6 @@ const AddressForm = () => {
                         {pageStatus}
                     </div>
                 )}
-
-                {/* 
-                {profileEdit === false && (
-                    <div className="mb-4 p-2 bg-green-100 border border-green-400 text-green-700 rounded text-sm">
-                        Your Profile have been approved.
-                    </div>
-                )} */}
 
                 {errors.submit && (
                     <div className="mb-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
@@ -206,27 +291,42 @@ const AddressForm = () => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">District</label>
-                            <input
-                                type="text"
-                                name="permanent_district"
-                                value={formData.permanent_district}
+                            <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                            <select
+                                name="permanent_state_id"
+                                value={formData.permanent_state_id}
                                 onChange={handleChange}
                                 required
-                                className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
+                                className={`w-full px-2 py-1 border ${errors.permanent_state_id ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                            >
+                                <option value="">Select State</option>
+                                {states.map((state) => (
+                                    <option key={state.id} value={state.id}>{state.name}</option>
+                                ))}
+                            </select>
+                            {errors.permanent_state_id && (
+                                <p className="text-red-500 text-xs mt-1">{errors.permanent_state_id}</p>
+                            )}
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
-                            <input
-                                type="text"
-                                name="permanent_state"
-                                value={formData.permanent_state}
+                            <label className="block text-sm font-medium text-gray-700 mb-1">District</label>
+                            <select
+                                name="permanent_district_id"
+                                value={formData.permanent_district_id}
                                 onChange={handleChange}
                                 required
-                                className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
+                                className={`w-full px-2 py-1 border ${errors.permanent_district_id ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                                disabled={!formData.permanent_state_id}
+                            >
+                                <option value="">Select District</option>
+                                {permanentDistricts.map((district) => (
+                                    <option key={district.id} value={district.id}>{district.name}</option>
+                                ))}
+                            </select>
+                            {errors.permanent_district_id && (
+                                <p className="text-red-500 text-xs mt-1">{errors.permanent_district_id}</p>
+                            )}
                         </div>
 
                         <div>
@@ -285,30 +385,43 @@ const AddressForm = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">District</label>
-                                <input
-                                    type="text"
-                                    name="correspondence_district"
-                                    value={formData.correspondence_district}
+                                <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                                <select
+                                    name="correspondence_state_id"
+                                    value={formData.correspondence_state_id}
                                     onChange={handleChange}
                                     required
-                                    className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
+                                    className={`w-full px-2 py-1 border ${errors.correspondence_state_id ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                                >
+                                    <option value="">Select State</option>
+                                    {states.map((state) => (
+                                        <option key={state.id} value={state.id}>{state.name}</option>
+                                    ))}
+                                </select>
+                                {errors.correspondence_state_id && (
+                                    <p className="text-red-500 text-xs mt-1">{errors.correspondence_state_id}</p>
+                                )}
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
-                                <input
-                                    type="text"
-                                    name="correspondence_state"
-                                    value={formData.correspondence_state}
+                                <label className="block text-sm font-medium text-gray-700 mb-1">District</label>
+                                <select
+                                    name="correspondence_district_id"
+                                    value={formData.correspondence_district_id}
                                     onChange={handleChange}
                                     required
-                                    className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
+                                    className={`w-full px-2 py-1 border ${errors.correspondence_district_id ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                                    disabled={!formData.correspondence_state_id}
+                                >
+                                    <option value="">Select District</option>
+                                    {correspondenceDistricts.map((district) => (
+                                        <option key={district.id} value={district.id}>{district.name}</option>
+                                    ))}
+                                </select>
+                                {errors.correspondence_district_id && (
+                                    <p className="text-red-500 text-xs mt-1">{errors.correspondence_district_id}</p>
+                                )}
                             </div>
-
-
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Pin Code</label>

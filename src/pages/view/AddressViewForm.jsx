@@ -5,25 +5,27 @@ import { useNavigate } from 'react-router-dom';
 
 const AddressViewForm = () => {
     const navigate = useNavigate();
-    const { userdata, updateuserdata, logout } = useContext(AuthContext);
+    const { userdata, logout } = useContext(AuthContext);
     const [formData, setFormData] = useState({
         permanent_address: '',
         permanent_city: '',
-        permanent_state: '',
-        permanent_district: '',
+        permanent_state_id: '',
+        permanent_district_id: '',
         permanent_pincode: '',
         correspondence_address: '',
         correspondence_city: '',
-        correspondence_state: '',
-        correspondence_district: '',
+        correspondence_state_id: '',
+        correspondence_district_id: '',
         correspondence_pincode: '',
         is_same_address: false,
     });
 
-    const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
-    const [showSuccess, setShowSuccess] = useState(false);
-    const [successMessages, setSuccessMessages] = useState({ serverresponse: "" });
+    
+    // Add states for dropdown options
+    const [states, setStates] = useState([]);
+    const [permanentDistricts, setPermanentDistricts] = useState([]);
+    const [correspondenceDistricts, setCorrespondenceDistricts] = useState([]);
     
     useEffect(() => {
         if (errors.serverError === "Invalid token" || errors.serverError === "Token has expired") {
@@ -32,25 +34,44 @@ const AddressViewForm = () => {
         }
     }, [errors.serverError, logout, navigate]);
 
-    
+    // Fetch states from API
+    useEffect(() => {
+        axios.get(`${import.meta.env.VITE_API_URL}/locations/states`)
+            .then(response => setStates(response.data))
+            .catch(error => console.error("Error fetching states", error));
+    }, []);
 
     useEffect(() => {
         if (!userdata?.address) return;
 
         const { address } = userdata;
+        
+        // Fetch districts for the user's states
+        if (address?.permanent_state_id) {
+            axios.get(`${import.meta.env.VITE_API_URL}/locations/districts?stateId=${address.permanent_state_id}`)
+                .then(response => setPermanentDistricts(response.data))
+                .catch(error => console.error("Error fetching permanent districts", error));
+        }
+        
+        if (address?.correspondence_state_id && !address?.is_same_address) {
+            axios.get(`${import.meta.env.VITE_API_URL}/locations/districts?stateId=${address.correspondence_state_id}`)
+                .then(response => setCorrespondenceDistricts(response.data))
+                .catch(error => console.error("Error fetching correspondence districts", error));
+        }
+        
         setFormData(prev => ({
             ...prev,
             permanent_address: address?.permanent_address || '',
             permanent_city: address?.permanent_city || '',
-            permanent_state: address?.permanent_state || '',
-            permanent_district: address?.permanent_district || '',
+            permanent_state_id: address?.permanent_state_id || '',
+            permanent_district_id: address?.permanent_district_id || '',
             permanent_pincode: address?.permanent_pincode || '',
             correspondence_address: address?.correspondence_address || '',
             correspondence_city: address?.correspondence_city || '',
-            correspondence_state: address?.correspondence_state || '',
-            correspondence_district: address?.correspondence_district || '',
+            correspondence_state_id: address?.correspondence_state_id || '',
+            correspondence_district_id: address?.correspondence_district_id || '',
             correspondence_pincode: address?.correspondence_pincode || '',
-            is_same_address: address?.is_same_address || false
+            is_same_address: address?.is_same_address || false,
         }));
 
     }, [userdata]);
@@ -89,27 +110,35 @@ const AddressViewForm = () => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">District</label>
-                            <input
-                                type="text"
-                                name="permanent_district"
-                                value={formData.permanent_district}
+                            <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                            <select
+                                name="permanent_state_id"
+                                value={formData.permanent_state_id}
                                 readOnly
                                 disabled
                                 className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
+                            >
+                                <option value="">Select State</option>
+                                {states.map((state) => (
+                                    <option key={state.id} value={state.id}>{state.name}</option>
+                                ))}
+                            </select>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
-                            <input
-                                type="text"
-                                name="permanent_state"
-                                value={formData.permanent_state}
+                            <label className="block text-sm font-medium text-gray-700 mb-1">District</label>
+                            <select
+                                name="permanent_district_id"
+                                value={formData.permanent_district_id}
                                 readOnly
                                 disabled
                                 className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
+                            >
+                                <option value="">Select District</option>
+                                {permanentDistricts.map((district) => (
+                                    <option key={district.id} value={district.id}>{district.name}</option>
+                                ))}
+                            </select>
                         </div>
 
                         <div>
@@ -124,18 +153,6 @@ const AddressViewForm = () => {
                             />
                         </div>
                     </div>
-
-                    {/* <div className="flex items-center space-x-2">
-                        <input
-                            type="checkbox"
-                            name="is_same_address"
-                            checked={formData.is_same_address}
-                            readOnly
-                            disabled
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                        />
-                        <label className="text-sm text-gray-700">Same as permanent address</label>
-                    </div> */}
 
                     {/* Correspondence Address */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -164,30 +181,36 @@ const AddressViewForm = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">District</label>
-                                <input
-                                    type="text"
-                                    name="correspondence_district"
-                                    value={formData.correspondence_district}
+                                <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                                <select
+                                    name="correspondence_state_id"
+                                    value={formData.correspondence_state_id}
                                     readOnly
                                     disabled
                                     className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
+                                >
+                                    <option value="">Select State</option>
+                                    {states.map((state) => (
+                                        <option key={state.id} value={state.id}>{state.name}</option>
+                                    ))}
+                                </select>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
-                                <input
-                                    type="text"
-                                    name="correspondence_state"
-                                    value={formData.correspondence_state}
+                                <label className="block text-sm font-medium text-gray-700 mb-1">District</label>
+                                <select
+                                    name="correspondence_district_id"
+                                    value={formData.correspondence_district_id}
                                     readOnly
                                     disabled
                                     className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
+                                >
+                                    <option value="">Select District</option>
+                                    {correspondenceDistricts.map((district) => (
+                                        <option key={district.id} value={district.id}>{district.name}</option>
+                                    ))}
+                                </select>
                             </div>
-
-
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Pin Code</label>
@@ -199,9 +222,6 @@ const AddressViewForm = () => {
                                     disabled
                                     className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
-                                {errors.correspondence_pincode && (
-                                    <p className="text-red-500 text-xs mt-1">{errors.correspondence_pincode}</p>
-                                )}
                             </div>
                         </div>
                 </form>
