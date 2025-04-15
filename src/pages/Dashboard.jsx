@@ -55,7 +55,7 @@ function Dashboard() {
                                 </p>
                                 <div className="flex items-center justify-between mt-2">
                                     <div className="bg-gray-100 text-gray-800 px-4 py-2 rounded-md">
-                                        Working Members: <span className="font-semibold">{getagentmembercount() - import.meta.env.VITE_AGENT_WORKING_MEMBER_START || 0}</span>
+                                        Working Members: <span className="font-semibold">{getagentmembercount()}</span>
                                     </div>
                                     {userdata.profile.is_agent==="Active" && (
                                         <Link 

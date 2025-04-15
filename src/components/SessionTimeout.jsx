@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/authContext';
 import PropTypes from 'prop-types';
 
-const SessionTimeout = ({ timeoutMinutes = 5 }) => {
+const SessionTimeout = ({ timeoutMinutes = import.meta.env.VITE_SESSION_TIMEOUT }) => {
     const { logout } = useContext(AuthContext);
     const navigate = useNavigate();
     

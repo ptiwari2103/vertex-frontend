@@ -57,8 +57,10 @@ export const AuthProvider = ({ children }) => {
     };
 
     const getagentmembercount = () => {
-        return agentmembercount;
+        const agentmembercountvalue = parseInt(agentmembercount - import.meta.env.VITE_AGENT_WORKING_MEMBER_START || 0)
+        return agentmembercountvalue;
     }
+
     const updateagentmembercount = (count) => {
         setAgentmembercount(count);
     }

@@ -79,7 +79,7 @@ function App() {
                     </Route>
                 </Routes>
                 {/* Session timeout component */}
-                <SessionTimeout timeoutMinutes={5} />
+                <SessionTimeout timeoutMinutes={import.meta.env.VITE_SESSION_TIMEOUT} />
             </Router>
         </AuthProvider>
     );
