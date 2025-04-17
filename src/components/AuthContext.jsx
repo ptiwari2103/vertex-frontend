@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }) => {
 
     const [unreadCount, setUnreadCount] = useState(0);
 
-    const [agentmembercount, setAgentmembercount] = useState(0);
+    const [agentmembercount, setAgentmembercount] = useState(localStorage.getItem("agentmembercount") || 0);
 
     const getnotification = async () =>{
         return unreadCount;
@@ -35,6 +35,7 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem("userdata", JSON.stringify(data.user));
             setIsAuthenticated(true);
             setUserdata(data.user);
+            localStorage.setItem("agentmembercount", data.user.agentmembercount || 0);
             setAgentmembercount(data.user.agentmembercount || 0);
         } catch (error) {
             console.error("Error in login:", error);
@@ -45,6 +46,7 @@ export const AuthProvider = ({ children }) => {
     const logout = () => {
         localStorage.removeItem("token");
         localStorage.removeItem("userdata");
+        localStorage.removeItem("agentmembercount");
         setIsAuthenticated(false);        
         setUserdata({});
         setAgentmembercount(0);
@@ -53,6 +55,7 @@ export const AuthProvider = ({ children }) => {
     const updateuserdata = (data) => {
         localStorage.setItem("userdata", JSON.stringify(data));        
         setUserdata(data);
+        localStorage.setItem("agentmembercount", data.agentmembercount); 
         setAgentmembercount(data.agentmembercount || 0);
     };
 
