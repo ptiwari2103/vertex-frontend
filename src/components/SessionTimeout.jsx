@@ -13,7 +13,7 @@ const SessionTimeout = ({ timeoutMinutes = import.meta.env.VITE_SESSION_TIMEOUT 
     // Function to handle user activity
     const handleUserActivity = useCallback(() => {
         // Update the last activity timestamp in localStorage
-        console.log('lastActivityTime=', Date.now().toString());
+        // console.log('lastActivityTime=', Date.now().toString());
         localStorage.setItem('lastActivityTime', Date.now().toString());
     }, []);
     
@@ -26,16 +26,16 @@ const SessionTimeout = ({ timeoutMinutes = import.meta.env.VITE_SESSION_TIMEOUT 
         // If inactive for too long, log out
         if (inactiveTime > timeoutDuration && localStorage.getItem('token')) {
             
-            const sessionExpired = localStorage.getItem('sessionExpired');
-            console.log('sessionExpired1=', sessionExpired);
+            // const sessionExpired = localStorage.getItem('sessionExpired');
+            // console.log('sessionExpired1=', sessionExpired);
 
-            console.log(`Session timeout: Inactive for ${inactiveTime / 1000} seconds`);
+            // console.log(`Session timeout: Inactive for ${inactiveTime / 1000} seconds`);
             
             // First set session expired flag in localStorage
             localStorage.setItem('sessionExpired', 'true');
             
-            const sessionExpired2 = localStorage.getItem('sessionExpired');
-            console.log('sessionExpired2=', sessionExpired2);
+            // const sessionExpired2 = localStorage.getItem('sessionExpired');
+           // console.log('sessionExpired2=', sessionExpired2);
 
             // Perform logout
             logout();
@@ -52,7 +52,7 @@ const SessionTimeout = ({ timeoutMinutes = import.meta.env.VITE_SESSION_TIMEOUT 
             return;
         }
         
-        console.log("Setting up session timeout monitoring");
+        //console.log("Setting up session timeout monitoring");
         
         // Initialize last activity time
         if (!localStorage.getItem('lastActivityTime')) {

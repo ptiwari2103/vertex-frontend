@@ -98,9 +98,9 @@ const HeaderMenu = () => {
                     <ul className="flex space-x-6">
                         <li><NavLink to="/dashboard" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Dashboard</NavLink></li>
                         {userdata?.is_edit !== "Approved" && (
-                            <li><NavLink to="/profileeditform" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Profile Edit Form</NavLink></li>
+                            <li><NavLink to="/profileeditform" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Profile Edit</NavLink></li>
                         )}
-                        <li><NavLink to="/profileviewform" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Profile View Form</NavLink></li>
+                        <li><NavLink to="/profileviewform" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Profile View</NavLink></li>
                         <li><NavLink to="/pinmanagement" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Pin Management</NavLink></li>
                         <li><NavLink to="/cardmanagement" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Credit Card</NavLink></li>   
                         {userdata?.profile?.is_fanchise === "Active" && (
@@ -121,6 +121,12 @@ const HeaderMenu = () => {
                                         {totalNotification > 9 ? '9+' : totalNotification}
                                     </span>
                                 )}
+                            </NavLink>
+                        </li>
+
+                        <li className="relative">
+                            <NavLink to="/referral" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>
+                                Member Fees
                             </NavLink>
                         </li> 
                     </ul>
@@ -159,6 +165,7 @@ const HeaderMenu = () => {
                         <li><NavLink to="/contact" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Contact</NavLink></li>
                         <li><NavLink to="/register" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Register</NavLink></li>
                     </ul>
+                    <NavLink to="/logindistributor" className="bg-green-500 px-3 py-1 rounded hover:bg-green-600">Gift Distributor</NavLink>
                     <NavLink to="/login" className="bg-green-500 px-3 py-1 rounded hover:bg-green-600">Login</NavLink>
                 </>
             )}

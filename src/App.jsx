@@ -18,6 +18,8 @@ import Agent from "./pages/Agent";
 import Franchise from "./pages/Franchise";
 import Notification from "./pages/Notification";
 import SessionTimeout from "./components/SessionTimeout";
+import LoginDistributor from "./pages/LoginDistributor";
+import Referral from "./pages/Referral";
 
 function App() {
     return (
@@ -30,6 +32,7 @@ function App() {
                         <Route path="contact" element={<Contact />} />
                         <Route path="register" element={<Register />} />
                         <Route path="login" element={<Login />} />
+                        <Route path="logindistributor" element={<LoginDistributor />} />
                         <Route path="profile" element={
                             <ProtectedRoute>
                                 <Profile />
@@ -73,6 +76,11 @@ function App() {
                         <Route path="franchise" element={
                             <ProtectedRoute>
                                 <Franchise />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="referral" element={
+                            <ProtectedRoute>
+                                <Referral />
                             </ProtectedRoute>
                         } />
                         <Route path="*" element={<NotFound />} />

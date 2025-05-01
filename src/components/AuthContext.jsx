@@ -20,6 +20,9 @@ export const AuthProvider = ({ children }) => {
 
     const [agentmembercount, setAgentmembercount] = useState(localStorage.getItem("agentmembercount") || 0);
 
+    const [pagerefresh, setPagerefresh] = useState(true);
+    
+    
     const getnotification = async () =>{
         return unreadCount;
     }
@@ -37,6 +40,7 @@ export const AuthProvider = ({ children }) => {
             setUserdata(data.user);
             localStorage.setItem("agentmembercount", data.user.agentmembercount || 0);
             setAgentmembercount(data.user.agentmembercount || 0);
+            setPagerefresh(false);
         } catch (error) {
             console.error("Error in login:", error);
         }
@@ -50,6 +54,7 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(false);        
         setUserdata({});
         setAgentmembercount(0);
+        setPagerefresh(true);
     };
 
     const updateuserdata = (data) => {
@@ -57,6 +62,7 @@ export const AuthProvider = ({ children }) => {
         setUserdata(data);
         localStorage.setItem("agentmembercount", data.agentmembercount); 
         setAgentmembercount(data.agentmembercount || 0);
+        setPagerefresh(false);
     };
 
     const getagentmembercount = () => {
@@ -66,6 +72,13 @@ export const AuthProvider = ({ children }) => {
 
     const updateagentmembercount = (count) => {
         setAgentmembercount(count);
+    }
+
+    const getpagerefresh = () => {
+        return pagerefresh;
+    }
+    const setpagerefresh = async (refresh) =>{
+        setPagerefresh(refresh);
     }
 
     useEffect(() => {
@@ -97,7 +110,7 @@ export const AuthProvider = ({ children }) => {
     
 
     return (
-        <AuthContext.Provider value={{ login, logout, isAuthenticated, userdata, updateuserdata, getnotification, setnotification, getagentmembercount, updateagentmembercount }}>
+        <AuthContext.Provider value={{ login, logout, isAuthenticated, userdata, updateuserdata, getnotification, setnotification, getagentmembercount, updateagentmembercount, getpagerefresh, setpagerefresh }}>
             {children}
         </AuthContext.Provider>
     );

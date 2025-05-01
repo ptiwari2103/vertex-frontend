@@ -75,13 +75,13 @@ const KycViewForm = () => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">PAN Card (Front)</label>
-                            <input
+                            {/* <input
                                 type="file"
                                 name="pan_number_image"
                                 readOnly
                                 accept="image/*"
                                 className="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                            />
+                            /> */}
                             {documentPreviews.pan_number_image && (
                                 <img src={documentPreviews.pan_number_image} alt="PAN Card Preview" className="mt-2 h-20 object-contain" />
                             )}
@@ -89,13 +89,13 @@ const KycViewForm = () => {
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Aadhar Card (Front)</label>
-                            <input
+                            {/* <input
                                 type="file"
                                 name="aadhar_number_image_front"
                                 readOnly
                                 accept="image/*"
                                 className="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                            />
+                            /> */}
                             {documentPreviews.aadhar_number_image_front && (
                                 <img src={documentPreviews.aadhar_number_image_front} alt="Aadhar Front Preview" className="mt-2 h-20 object-contain" />
                             )}
@@ -103,13 +103,13 @@ const KycViewForm = () => {
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Aadhar Card (Back)</label>
-                            <input
+                            {/* <input
                                 type="file"
                                 name="aadhar_number_image_back"
                                 readOnly
                                 accept="image/*"
                                 className="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                            />
+                            /> */}
                             {documentPreviews.aadhar_number_image_back && (
                                 <img src={documentPreviews.aadhar_number_image_back} alt="Aadhar Back Preview" className="mt-2 h-20 object-contain" />
                             )}

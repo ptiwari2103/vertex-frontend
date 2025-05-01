@@ -3,7 +3,7 @@ import { AuthContext } from '../contexts/authContext';
 import axios from 'axios';
 
 const Agent = () => {
-    const { userdata, updateuserdata, updateagentmembercount } = useContext(AuthContext);
+    const { userdata, updateuserdata, updateagentmembercount, setpagerefresh } = useContext(AuthContext);
     const [isAgent, setIsAgent] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -14,8 +14,9 @@ const Agent = () => {
     useEffect(() => {
         if(userdata?.agent?.id){
             setIsAgent(true);
+            setpagerefresh(true);
         }
-    }, [userdata?.agent?.id]);
+    }, [userdata?.agent?.id, setpagerefresh]);
 
     useEffect(() => {
         if(userdata?.id){

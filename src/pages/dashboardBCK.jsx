@@ -1,15 +1,13 @@
-import { useContext, useEffect, useRef } from "react";
+import { useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../contexts/authContext";
 import axios from "axios";
 
 function Dashboard() {    
     const { userdata, getagentmembercount, updateuserdata, getpagerefresh, setpagerefresh } = useContext(AuthContext);
-    const fetchedRef = useRef(false);
     
     useEffect(() => {
-        console.log("dashboard page - component mounted");
-        
+        // Check if we're not coming from the login page
         const fetchUserData = async () => {
             try {
                 const token = localStorage.getItem("token");
@@ -34,23 +32,17 @@ function Dashboard() {
             }
         };
         
-        const shouldFetch = getpagerefresh() && !fetchedRef.current;
-        console.log("getpagerefresh=", getpagerefresh(), "fetchedRef.current=", fetchedRef.current);
-        
-        if (shouldFetch && userdata?.user_id) {
+        console.log("getpagerefresh=", getpagerefresh());
+        if (getpagerefresh()) {
             console.log("Dashboard - Fetching updated user data");
-            fetchedRef.current = true;
             fetchUserData();
         } else {
-            console.log("Dashboard - Skipping user data fetch");
+            console.log("Dashboard - Skipping Fetching updated user data");
         }
-        
-        return () => {
-            console.log("Dashboard component unmounting");
-            fetchedRef.current = false;
-        };
-    }, [getpagerefresh, updateuserdata, setpagerefresh, userdata?.user_id]);
+    }, []);
    
+    console.log("dashboard page");
+    
     return (
         <div className="flex flex-col justify-center items-center min-h-[calc(100vh-64px)] py-8">
             {/* Show KYC status message */}
