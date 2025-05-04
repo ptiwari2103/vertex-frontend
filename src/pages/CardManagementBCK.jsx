@@ -6,154 +6,43 @@ const CardManagement = () => {
     const { userdata } = useContext(AuthContext);
     
     const [cardDetails, setCardDetails] = useState(null);
+    const [cardTransactions, setCardTransactions] = useState([]);
     const [requestStatus, setRequestStatus] = useState(null);
     const [showSuccess, setShowSuccess] = useState(false);
     const [successMessages, setSuccessMessages] = useState({ message: "" });
-    const [cardTransactions, setCardTransactions] = useState([]);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [paymentAmount, setPaymentAmount] = useState("");
     const [paymentReason, setPaymentReason] = useState("");
     const [validationError, setValidationError] = useState("");
     const [requestType, setRequestType] = useState("use");
 
-    // Define fetchCardTransactions outside of fetchCardDetails to avoid circular dependency
-    const fetchCardTransactions = async (cardId) => {
-        // Skip if transactions were already provided in the card details response
-        if (cardTransactions.length > 0) return;
-        
+    const fetchCardDetails = useCallback(async () => {
         try {
-            console.log("Fetching transactions for card ID:", cardId);
-            const response = await axios.get(`${import.meta.env.VITE_API_URL}/cards/transactions`, {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/cards/details`, {
                 params: {
-                    card_id: cardId
+                    user_id: userdata?.id
                 },
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`
                 }
             });
-            console.log("Transactions fetched:", response.data);
-            setCardTransactions(response.data || []);
-        } catch (err) {
-            console.error("Error fetching card transactions:", err);
-            setCardTransactions([]);
-        }
-    };
-
-    const fetchCardDetails = useCallback(async () => {
-        try {
-            // For debugging, use a hardcoded user_id if userdata is not available
-            const userId = userdata?.id || 86;
-            
-            console.log("Fetching card details for user ID:", userId);
-            
-            // Try using hardcoded data for testing if the API fails
-            let responseData;
-            
-            try {
-                const response = await axios.get(`${import.meta.env.VITE_API_URL}/cards/details`, {
-                    params: {
-                        user_id: userId
-                    },
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`
-                    }
-                });
-                
-                console.log("API Response:", response.data);
-                responseData = response.data;
-            } catch (error) {
-                console.error("Error fetching from API, using hardcoded data:", error);
-                // Fallback to hardcoded data if API fails
-                responseData = {
-                    card: {
-                        id: 1,
-                        user_id: 86,
-                        card_number: "4234324242342342",
-                        expiry_month: 3,
-                        expiry_year: 2026,
-                        cvv_code: "324",
-                        assigned_date: "2025-04-04T04:20:02.000Z",
-                        card_limit: 4000,
-                        current_balance: 3500,
-                        first_tx: 1,
-                        status: "Approved",
-                        created_at: "2025-04-01T04:19:38.000Z",
-                        updated_at: "2025-04-10T04:19:38.000Z"
-                    },
-                    transactions: [
-                        {
-                            id: 11,
-                            user_id: 86,
-                            payment_category: "Card",
-                            comment: "Card Limit",
-                            type: "Deposit",
-                            added: 1000,
-                            used: null,
-                            balance: 4000,
-                            status: "Closed",
-                            created_date: "2025-05-01T04:20:45.000Z",
-                            updated_date: "2025-05-01T04:20:45.000Z"
-                        }
-                    ]
-                };
-            }
+            // console.log("Card details:", response.data);
             
             // Handle the nested card object in the response
-            if (responseData && responseData.card) {
-                console.log("Setting card details from nested structure:", responseData.card);
-                const cardData = responseData.card;
-                
-                // Ensure we have a card ID
-                if (!cardData.id && !cardData.card_id) {
-                    console.warn("Card ID not found in response");
-                }
-                
-                // Set card details directly to state
-                setCardDetails(cardData);
-                console.log("Card details set to state:", cardData);
-                
+            if (response.data.card) {
+                setCardDetails(response.data.card);
                 // Set transactions if they exist in the response
-                if (responseData.transactions && Array.isArray(responseData.transactions)) {
-                    console.log("Setting transactions from response:", responseData.transactions);
-                    setCardTransactions(responseData.transactions);
-                } else {
-                    // Fetch transactions separately if needed
-                    const cardId = cardData.id || cardData.card_id;
-                    if (cardId) {
-                        fetchCardTransactions(cardId);
-                    }
+                if (response.data.transactions && Array.isArray(response.data.transactions)) {
+                    setCardTransactions(response.data.transactions);
                 }
             } else {
-                console.log("Setting card details directly:", responseData);
-                setCardDetails(responseData);
-                
-                // Fetch card transactions if not included in the response
-                const cardId = responseData?.id || responseData?.card_id;
-                if (cardId) {
-                    fetchCardTransactions(cardId);
-                }
+                setCardDetails(null);
             }
         } catch (err) {
-            console.error("Error in fetchCardDetails:", err);
-            // Set a default card for debugging
-            setCardDetails({
-                id: 1,
-                user_id: 86,
-                card_number: "4234324242342342",
-                expiry_month: 3,
-                expiry_year: 2026,
-                cvv_code: "324",
-                assigned_date: "2025-04-04T04:20:02.000Z",
-                card_limit: 4000,
-                current_balance: 3500,
-                status: "Approved",
-                created_at: "2025-04-01T04:19:38.000Z",
-                updated_at: "2025-04-10T04:19:38.000Z"
-            });
+            console.error("Error fetching card details:", err);
+            setCardDetails(null);
         }
-    }, [userdata, cardTransactions.length]);
-    
-    
+    }, [userdata]);
 
     const requestNewCreditCard = async () => {
         try {
@@ -193,13 +82,13 @@ const CardManagement = () => {
         
         // For use amount requests, check against current balance
         if (requestType === "use" && amount > currentBalance) {
-            setValidationError(`Amount cannot exceed your current balance of ₹${currentBalance.toLocaleString()}`); 
+            setValidationError(`Amount cannot exceed your current balance of ₹${currentBalance.toLocaleString()}`);
             return;
         }
         
         // For payable amount requests, check against card limit
         if (requestType === "payable" && amount > cardLimit) {
-            setValidationError(`Amount cannot exceed your card limit of ₹${cardLimit.toLocaleString()}`); 
+            setValidationError(`Amount cannot exceed your card limit of ₹${cardLimit.toLocaleString()}`);
             return;
         }
         
@@ -212,16 +101,8 @@ const CardManagement = () => {
                 return;
             }
             
-            console.log("Sending payment request with data:", {
-                user_id: userdata?.id || 86,
-                card_id: cardId,
-                amount: amount,
-                reason: paymentReason,
-                request_type: requestType
-            });
-            
             await axios.post(`${import.meta.env.VITE_API_URL}/cards/payment-request`, {
-                user_id: userdata?.id || 86,
+                user_id: userdata?.id,
                 card_id: cardId,
                 amount: amount,
                 reason: paymentReason,
@@ -237,58 +118,20 @@ const CardManagement = () => {
             setShowPaymentModal(false);
             setPaymentAmount("");
             setPaymentReason("");
-            setValidationError("");
             // Refresh card details and transactions
             fetchCardDetails();
-        } catch (error) {
+        } catch (err) {
             setRequestStatus({ success: false, message: "Error requesting payment. Please try again later." });
             setShowSuccess(false);
         }
     };
     
     useEffect(() => {
-        console.log("Fetching card details...");
         fetchCardDetails();
     }, [fetchCardDetails]);
 
-    // For debugging
-    useEffect(() => {
-        console.log("Current cardDetails state:", cardDetails);
-        if (cardDetails) {
-            console.log("Card status:", cardDetails.status);
-            console.log("Is card approved?", cardDetails.status === "Approved");
-        }
-    }, [cardDetails]);
-    
-    // Force render for debugging
-    const [forceRender, setForceRender] = useState(0);
-    
-    useEffect(() => {
-        // Force a re-render after a short delay to ensure state is updated
-        const timer = setTimeout(() => {
-            setForceRender(prev => prev + 1);
-            console.log("Forced re-render", forceRender);
-        }, 2000);
-        
-        return () => clearTimeout(timer);
-    }, [forceRender]);
-    
     return (
         <div className="p-6 bg-gray-100 min-h-screen relative">
-            {/* Debug info */}
-            <div className="mb-4 p-2 bg-gray-100 border border-gray-300 rounded text-xs text-gray-700">
-                <div>Debug Info (Force render: {forceRender})</div>
-                <div>Card data loaded: {cardDetails ? 'Yes' : 'No'}</div>
-                {cardDetails && (
-                    <>
-                        <div>Card ID: {cardDetails.id}</div>
-                        <div>Card Status: {cardDetails.status}</div>
-                        <div>Card Number: {cardDetails.card_number}</div>
-                        <div>Is Approved: {String(cardDetails.status === "Approved")}</div>
-                    </>
-                )}
-            </div>
-            
             {showSuccess && (
                 <div className="mb-4 text-green-500">
                     {successMessages.message}
@@ -299,10 +142,8 @@ const CardManagement = () => {
                     {requestStatus.message}
                 </div>
             )}
-            {/* Card display and status handling */}
-            {/* Force display the card for debugging */}
-            {true ? 
-                (cardDetails && cardDetails.status === "Approved") ? (
+            {cardDetails ? (
+                cardDetails.status === "Approved" ? (
                     <div className="mb-6 flex justify-between items-center">
                         <div className="w-96 h-56 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg p-6 relative overflow-hidden">
                             {/* Card chip */}
@@ -375,12 +216,8 @@ const CardManagement = () => {
                     <div className="mb-6 text-red-500">
                         Your card is blocked.
                     </div>
-                ) : (
-                    <div className="mb-6 text-yellow-500">
-                        Card status not available. Please refresh the page.
-                    </div>
-                )
-            : (
+                ) : null
+            ) : (
                 <button
                   onClick={requestNewCreditCard}
                   className="absolute top-6 right-6 mb-6 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
@@ -390,7 +227,7 @@ const CardManagement = () => {
             )}
             
             {/* Card Details Listing */}
-            {cardDetails && (cardDetails.status === "Approved" || true) && (
+            {cardDetails && cardDetails.status === "Approved" && (
                 <div className="mt-10">
                     <h2 className="text-2xl font-bold mb-6 text-gray-800">Card Details</h2>
                     <div className="bg-white rounded-lg shadow-md p-6">
@@ -455,7 +292,9 @@ const CardManagement = () => {
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Added</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Used</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                     </tr>
                                 </thead>
@@ -463,19 +302,52 @@ const CardManagement = () => {
                                     {cardTransactions.map((transaction, index) => (
                                         <tr key={index} className="hover:bg-gray-50">
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {new Date(transaction.transaction_date).toLocaleDateString()}
+                                                {new Date(transaction.created_date || transaction.transaction_date).toLocaleDateString()}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
-                                                {transaction.description}
+                                                {transaction.comment || transaction.description}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <span className={transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'}>
-                                                    {transaction.type === 'credit' ? '+' : '-'}${transaction.amount.toFixed(2)}
-                                                </span>
+                                                {(transaction.added) ? (
+                                                    <span className="text-green-600">
+                                                        ₹{(transaction.added || 0).toFixed(2)}
+                                                    </span>
+                                                ) : (
+                                                    <span>
+                                                        --
+                                                    </span>
+                                                )}
                                             </td>
+
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                {(transaction.used) ? (
+                                                    <span className="text-red-600">
+                                                        ₹{(transaction.used || 0).toFixed(2)}
+                                                    </span>
+                                                ) : (
+                                                    <span>
+                                                        --
+                                                    </span>
+                                                )}
+                                            </td>
+
+
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                {(transaction.balance) ? (
+                                                    <span className="text-gray-800">
+                                                        ₹{(transaction.balance || 0).toFixed(2)}
+                                                    </span>
+                                                ) : (
+                                                    <span>
+                                                        --
+                                                    </span>
+                                                )}
+                                            </td>
+
+
                                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                                                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                    ${transaction.status === 'completed' ? 'bg-green-100 text-green-800' : 
+                                                    ${transaction.status === 'completed' || transaction.status === 'Closed' ? 'bg-green-100 text-green-800' : 
                                                     transaction.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
                                                     'bg-red-100 text-red-800'}`}>
                                                     {transaction.status}
