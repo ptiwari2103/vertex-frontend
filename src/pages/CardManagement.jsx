@@ -59,9 +59,19 @@ const CardManagement = () => {
                     Authorization: `Bearer ${localStorage.getItem("token")}`
                 }
             });
+            
+            // Update success message
             setRequestStatus({ success: true, message: "Credit card request successful!" });
             setShowSuccess(true);
             setSuccessMessages({ message: "Credit card request successful!" });
+            
+            // Create a temporary card object to hide the request button immediately
+            // This will show the pending status message instead of the request button
+            setCardDetails({
+                status: "Pending",
+                created_at: new Date().toISOString()
+            });
+            
         } catch (err) {
             setRequestStatus({ success: false, message: "Error requesting new credit card. Please try again later." });
             setShowSuccess(false);
@@ -95,6 +105,7 @@ const CardManagement = () => {
 
             if(response.data.success === true){
                 // Set payable data and show modal
+                // alert(response.data.payable.total_net_amount)
                 setPayableData(response.data.payable);
                 setPayableAmount(response.data.payable.total_net_amount || 0);
                 setShowPayableModal(true);
@@ -191,6 +202,7 @@ const CardManagement = () => {
             
             await axios.post(`${import.meta.env.VITE_API_URL}/cards/create-use-request`, {
                 user_id: userdata?.user_id,
+                card_id: cardId,
                 amount: amount,
                 reason: paymentReason
             }, {
@@ -228,7 +240,9 @@ const CardManagement = () => {
                     {requestStatus.message}
                 </div>
             )}
+            {/* Card display based on status */}
             {cardDetails ? (
+                // If card exists, show appropriate status display
                 cardDetails.status === "Approved" ? (
                     <div className="mb-6 flex justify-between items-center">
                         <div className="w-96 h-56 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg p-6 relative overflow-hidden">
@@ -319,12 +333,15 @@ const CardManagement = () => {
                     </div>
                 ) : null
             ) : (
-                <button
-                  onClick={requestNewCreditCard}
-                  className="absolute top-6 right-6 mb-6 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                >
-                  Request New Credit Card
-                </button>
+                // Only show the Request New Credit Card button if no card exists
+                <div className="flex justify-center items-center min-h-[200px]">
+                    <button
+                      onClick={requestNewCreditCard}
+                      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105"
+                    >
+                      Request New Credit Card
+                    </button>
+                </div>
             )}
             
             {/* Card Details Listing */}
@@ -566,10 +583,19 @@ const CardManagement = () => {
                                 ₹{payableData?.total_interest?.toLocaleString() || '0.00'}
                             </div>
                         </div>
+
+                        <div className="mb-4">
+                            <label className="block text-gray-700 text-sm font-bold mb-2">
+                                Remaining Amount
+                            </label>
+                            <div className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 bg-gray-100">
+                                ₹{payableData?.remaining_amount?.toLocaleString() || '0.00'}
+                            </div>
+                        </div>
                         
                         <div className="mb-4">
                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="payableAmount">
-                                Total Payable Amount
+                                Total Payable Amount 
                             </label>
                             <input
                                 id="payableAmount"
@@ -577,7 +603,7 @@ const CardManagement = () => {
                                 min="0.01"
                                 step="0.01"
                                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                value={payableData?.total_net_amount?.toLocaleString() || '0.00'}
+                                value={payableAmount}
                                 onChange={(e) => setPayableAmount(e.target.value)}
                                 placeholder="Enter payable amount"
                             />
@@ -597,8 +623,8 @@ const CardManagement = () => {
                             </button>
                             <button
                                 onClick={submitPayableRequest}
-                                disabled={isLoadingPayable}
-                                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center"
+                                disabled={isLoadingPayable || !payableData?.total_net_amount || parseFloat(payableData?.total_net_amount) <= 0}
+                                className={`${(!payableData?.total_net_amount || parseFloat(payableData?.total_net_amount) <= 0) ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-700'} text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center`}
                             >
                                 {isLoadingPayable ? (
                                     <>
