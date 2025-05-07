@@ -21,6 +21,8 @@ const CardManagement = () => {
     const [payableData, setPayableData] = useState(null);
     const [payableAmount, setPayableAmount] = useState("");
     const [isLoadingPayable, setIsLoadingPayable] = useState(false);
+    const [paymentMethod, setPaymentMethod] = useState("");
+    const [transactionId, setTransactionId] = useState("");
 
     const fetchCardDetails = useCallback(async () => {
         try {
@@ -127,6 +129,12 @@ const CardManagement = () => {
                 return;
             }
             
+            // Validate payment method
+            if (!paymentMethod) {
+                setValidationError("Please select a payment method");
+                return;
+            }
+            
             setIsLoadingPayable(true);
             
             // Get the card ID from the correct property
@@ -136,7 +144,9 @@ const CardManagement = () => {
             await axios.post(`${import.meta.env.VITE_API_URL}/cards/create-payable-request`, {
                 user_id: userdata?.user_id,
                 card_id: cardId,
-                amount: parseFloat(payableAmount)
+                amount: parseFloat(payableAmount),
+                payment_method: paymentMethod,
+                transaction_id: transactionId
             }, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`
@@ -381,7 +391,7 @@ const CardManagement = () => {
                                 </p>
                             </div>
                             <div>
-                                <h3 className="text-gray-500 text-sm font-medium mb-1">Current Balance</h3>
+                                <h3 className="text-gray-700 text-sm font-bold mb-1">Current Balance</h3>
                                 <p className="text-gray-800 font-semibold">
                                 ₹{cardDetails.current_balance || '0.00'}
                                 </p>
@@ -410,8 +420,11 @@ const CardManagement = () => {
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Added</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Method</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transaction ID</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deposit</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Used</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Added</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                     </tr>
@@ -426,9 +439,15 @@ const CardManagement = () => {
                                                 {transaction.comment || transaction.description}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                {(transaction.added) ? (
+                                                {transaction?.paymentRequest?.payment_method}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                {transaction?.paymentRequest?.transaction_id}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                {(transaction.deposit) ? (
                                                     <span className="text-green-600">
-                                                        ₹{(transaction.added || 0).toFixed(2)}
+                                                        ₹{(transaction.deposit || 0).toFixed(2)}
                                                     </span>
                                                 ) : (
                                                     <span>
@@ -441,6 +460,18 @@ const CardManagement = () => {
                                                 {(transaction.used) ? (
                                                     <span className="text-red-600">
                                                         ₹{(transaction.used || 0).toFixed(2)}
+                                                    </span>
+                                                ) : (
+                                                    <span>
+                                                        --
+                                                    </span>
+                                                )}
+                                            </td>
+
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                {(transaction.added) ? (
+                                                    <span className="text-green-600">
+                                                        ₹{(transaction.added || 0).toFixed(2)}
                                                     </span>
                                                 ) : (
                                                     <span>
@@ -608,6 +639,38 @@ const CardManagement = () => {
                                 placeholder="Enter payable amount"
                             />
                         </div>
+
+                        <div className="mb-4">
+                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="payment_method">Payment Method</label>
+                            <select 
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" 
+                                id="payment_method" 
+                                name="payment_method" 
+                                required
+                                value={paymentMethod}
+                                onChange={(e) => setPaymentMethod(e.target.value)}
+                            >
+                                <option value="" disabled>Select payment method</option>
+                                <option value="bank_transfer">Bank Transfer</option>
+                                <option value="upi">UPI</option>
+                                <option value="cash">Cash</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <div className="text-red-500 text-sm mt-1" style={{display: paymentMethod ? 'none' : 'block'}}>Please select a payment method.</div>
+                        </div>
+
+                        <div className="mb-4">
+                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="transaction_id">Transaction ID</label>
+                            <input 
+                                type="text" 
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" 
+                                id="transaction_id" 
+                                name="transaction_id"
+                                value={transactionId}
+                                onChange={(e) => setTransactionId(e.target.value)}
+                            />
+                            <div className="text-red-500 text-sm mt-1" style={{display: 'none'}}>Please enter a transaction ID.</div>
+                        </div>
                         
                         <div className="flex justify-end space-x-3">
                             <button
@@ -615,6 +678,8 @@ const CardManagement = () => {
                                     setShowPayableModal(false);
                                     setValidationError("");
                                     setPayableAmount("");
+                                    setPaymentMethod("");
+                                    setTransactionId("");
                                     setPayableData(null);
                                 }}
                                 className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
