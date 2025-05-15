@@ -102,7 +102,13 @@ const HeaderMenu = () => {
                         )}
                         <li><NavLink to="/profileviewform" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Profile View</NavLink></li>
                         <li><NavLink to="/pinmanagement" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Pin Management</NavLink></li>
-                        <li><NavLink to="/cardmanagement" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Credit Card</NavLink></li>   
+
+                        {userdata?.profile?.kyc_status === "Approved" ? (
+                            <li><NavLink to="/cardmanagement" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Credit Card</NavLink></li>
+                        ) : (
+                            <li><span className="text-gray-400 cursor-not-allowed" title="Requires approval">Credit Card</span></li>
+                        )}
+                        
                         {userdata?.profile?.is_fanchise === "Active" && (
                             <li><NavLink to="/franchise" className={({ isActive }) => isActive ? "text-yellow-300 font-bold" : "hover:text-gray-300"}>Franchise</NavLink></li>   
                         )}

@@ -180,6 +180,13 @@ const CardManagement = () => {
             return;
         }
         
+        // Validate minimum amount based on first_tx condition
+        const minAmount = cardDetails?.first_tx === 0 ? import.meta.env.VITE_CREDIT_CARD_FIRST_TX_MIN : 0.01;
+        if (parseFloat(paymentAmount) < parseFloat(minAmount)) {
+            setValidationError(`Minimum amount should be ₹${minAmount}`);
+            return;
+        }
+        
         if (!paymentReason.trim()) {
             setValidationError("Please provide a reason for the payment request");
             return;
@@ -538,7 +545,7 @@ const CardManagement = () => {
                             <input
                                 id="amount"
                                 type="number"
-                                min="0.01"
+                                min={cardDetails?.first_tx === 0 ? import.meta.env.VITE_CREDIT_CARD_FIRST_TX_MIN : "0.01"}
                                 step="0.01"
                                 max={requestType === "use" ? cardDetails?.current_balance || 0 : cardDetails?.card_limit || 0}
                                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
