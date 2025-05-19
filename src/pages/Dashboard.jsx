@@ -52,7 +52,103 @@ function Dashboard() {
     }, [getpagerefresh, updateuserdata, setpagerefresh, userdata?.user_id]);
    
     return (
-        <div className="flex flex-col justify-center items-center min-h-[calc(100vh-64px)] py-8">
+        <div className="flex flex-col justify-start items-center min-h-[calc(100vh-64px)] pt-0 pb-8">
+            {/* Wallet Boxes - All 4 in a single row */}
+            <div className="w-full max-w-6xl mb-6 px-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    {/* CD Wallet Box */}
+                    <Link to="/cd-wallet" className="transform transition-transform duration-300 hover:scale-105">
+                        <div className="bg-gradient-to-r from-blue-500 to-blue-700 rounded-lg shadow-lg overflow-hidden cursor-pointer h-full">
+                            <div className="p-4">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-white font-bold text-lg mb-1">CD Wallet</h3>
+                                        <p className="text-blue-100 text-xs">Certificate of Deposit</p>
+                                    </div>
+                                    <div className="bg-white bg-opacity-20 p-2 rounded-full">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div className="mt-3">
+                                    <div className="text-white text-xl font-bold">₹{userdata?.cd_wallet?.balance || '0.00'}</div>
+                                    <div className="text-blue-100 text-xs mt-1">Available Balance</div>
+                                </div>
+                            </div>
+                        </div>
+                    </Link>
+
+                    {/* FD Wallet Box */}
+                    <Link to="/fd-wallet" className="transform transition-transform duration-300 hover:scale-105">
+                        <div className="bg-gradient-to-r from-green-500 to-green-700 rounded-lg shadow-lg overflow-hidden cursor-pointer h-full">
+                            <div className="p-4">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-white font-bold text-lg mb-1">FD Wallet</h3>
+                                        <p className="text-green-100 text-xs">Fixed Deposit</p>
+                                    </div>
+                                    <div className="bg-white bg-opacity-20 p-2 rounded-full">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div className="mt-3">
+                                    <div className="text-white text-xl font-bold">₹{userdata?.fd_wallet?.balance || '0.00'}</div>
+                                    <div className="text-green-100 text-xs mt-1">Available Balance</div>
+                                </div>
+                            </div>
+                        </div>
+                    </Link>
+
+                    {/* RD Wallet Box */}
+                    <Link to="/rd-wallet" className="transform transition-transform duration-300 hover:scale-105">
+                        <div className="bg-gradient-to-r from-amber-500 to-amber-700 rounded-lg shadow-lg overflow-hidden cursor-pointer h-full">
+                            <div className="p-4">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-white font-bold text-lg mb-1">RD Wallet</h3>
+                                        <p className="text-amber-100 text-xs">Recurring Deposit</p>
+                                    </div>
+                                    <div className="bg-white bg-opacity-20 p-2 rounded-full">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div className="mt-3">
+                                    <div className="text-white text-xl font-bold">₹{userdata?.rd_wallet?.balance || '0.00'}</div>
+                                    <div className="text-amber-100 text-xs mt-1">Available Balance</div>
+                                </div>
+                            </div>
+                        </div>
+                    </Link>
+
+                    {/* OD Wallet Box */}
+                    <Link to="/od-wallet" className="transform transition-transform duration-300 hover:scale-105">
+                        <div className="bg-gradient-to-r from-purple-500 to-purple-700 rounded-lg shadow-lg overflow-hidden cursor-pointer h-full">
+                            <div className="p-4">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-white font-bold text-lg mb-1">OD Wallet</h3>
+                                        <p className="text-purple-100 text-xs">Overdraft Account</p>
+                                    </div>
+                                    <div className="bg-white bg-opacity-20 p-2 rounded-full">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div className="mt-3">
+                                    <div className="text-white text-xl font-bold">₹{userdata?.od_wallet?.balance || '0.00'}</div>
+                                    <div className="text-purple-100 text-xs mt-1">Available Balance</div>
+                                </div>
+                            </div>
+                        </div>
+                    </Link>
+                </div>
+            </div>
             {/* Show KYC status message */}
             {userdata?.profile?.kyc_status === "Pending" && (
                 <div className="w-full max-w-6xl mb-6 px-4">

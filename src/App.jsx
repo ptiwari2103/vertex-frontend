@@ -20,6 +20,10 @@ import Notification from "./pages/Notification";
 import SessionTimeout from "./components/SessionTimeout";
 import LoginDistributor from "./pages/LoginDistributor";
 import Referral from "./pages/Referral";
+import CDWallet from "./pages/CDWallet";
+import ODWallet from "./pages/ODWallet";
+import FDWallet from "./pages/FDWallet";
+import RDWallet from "./pages/RDWallet";
 
 function App() {
     return (
@@ -81,6 +85,26 @@ function App() {
                         <Route path="referral" element={
                             <ProtectedRoute>
                                 <Referral />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="cd-wallet" element={
+                            <ProtectedRoute>
+                                <CDWallet />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="od-wallet" element={
+                            <ProtectedRoute>
+                                <ODWallet />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="fd-wallet" element={
+                            <ProtectedRoute>
+                                <FDWallet />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="rd-wallet" element={
+                            <ProtectedRoute>
+                                <RDWallet />
                             </ProtectedRoute>
                         } />
                         <Route path="*" element={<NotFound />} />
